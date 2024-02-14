@@ -1,5 +1,5 @@
 <div *ngIf="!loading; else loadingSpinner" class="flex flex-col" style="min-height: 100vh;">
-  <div class="bg-base-200 min-h-16" style="position: sticky; top: 0; box-shadow: 0 0 2rem 1rem rgba(0,0,0,0.5);">
+  <div class="bg-base-200 min-h-16" style="z-index: 500; position: sticky; top: 0; box-shadow: 0 0 2rem 1rem rgba(0,0,0,0.5);">
     <div class="w-full flex flex-row min-h-16 justify-center items-center p-4">
       <div class="flex w-96 justify-between flex-row">
         <div class="flex flex-row gap-2 items-center text-3xl font-bold">
@@ -19,7 +19,7 @@
 
   <div class="w-full flex flex-col justify-center items-center flex-grow">
     <div id="all" cdkDropList [cdkDropListData]="tracks" cdkDropListConnectedTo="newd"
-      class="drag-list flex flex-col w-full flex-grow justify-center items-center gap-3 px-2 py-16" (cdkDropListDropped)="drop($event)" (cdkDropListEntered)="move($event)" (cdkDropListSorted)="move($event)">
+      class="drag-list flex flex-col w-full flex-grow justify-center items-center gap-3 px-2 my-16" (cdkDropListDropped)="drop($event)" (cdkDropListEntered)="move($event)" (cdkDropListSorted)="move($event)">
       @for (number of tracks; track number;) {
 
       <ng-container *ngIf="number == -1">
@@ -68,7 +68,7 @@
     </div>
   </div>
 
-  <div class="bg-base-200 min-h-[11rem]" style="position: sticky; bottom: 0; box-shadow: 0 0 2rem 1rem rgba(0,0,0,0.5);">
+  <div class="bg-base-200 min-h-[11rem]" style="z-index: 500; position: sticky; bottom: 0; box-shadow: 0 0 2rem 1rem rgba(0,0,0,0.5);">
     <div class="w-full flex flex-col min-h-[11rem] justify-end items-center gap-3 p-4">
       <div [class.hidden]="newd.length == 0" id="newd" cdkDropList [cdkDropListData]="newd" cdkDropListConnectedTo="all" class="drag-list"
         (cdkDropListDropped)="drop($event)" [cdkDropListEnterPredicate]="noReturnPredicate">
@@ -141,7 +141,7 @@
       </p>
       <!-- <p class="mt-2">Stats: {{totalStats | json}}</p> -->
     </div>
-    <div method="dialog" class="modal-backdrop z-50">
+    <div method="dialog" class="modal-backdrop" style="z-index: 3000;">
       <button (click)="nextGuess()">close</button>
     </div>
   </dialog>
