@@ -2,8 +2,9 @@ import { Component, ViewChild } from '@angular/core';
 import { SpotifyApiService } from '../../shared/spotify-api/spotify-api.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { PlaylistLink } from '../../shared/playlist_link';
+import { PlaylistLink } from '../../shared/playlist-link';
 import { Router } from '@angular/router';
+import { GameSettings } from '../../shared/game-settings';
 
 @Component({
   selector: 'app-home',
@@ -22,6 +23,9 @@ export class HomeComponent {
   constructor(private router: Router, private spotifyApi: SpotifyApiService) { }
 
   ngOnInit(): void {
+    const t = localStorage.getItem('game_settings');
+    if (t) this.settings = {...this.settings, ...JSON.parse(t)};
+
     this.inputChange();
   }
 
@@ -53,9 +57,16 @@ export class HomeComponent {
     this.inputString = this.selectString;
   }
 
+  settings: GameSettings = {
+    keepWrongGuesses: true,
+  };
+
   start() {
     const r = this.inputChange();
     if (!r) return;
+
+    localStorage.setItem('game_settings', JSON.stringify(this.settings));
+
     if (r.type == 'spotify') {
       localStorage.setItem('playlist_link', JSON.stringify(r));
       this.spotifyApi.authorize();

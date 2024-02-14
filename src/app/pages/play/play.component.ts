@@ -1,14 +1,15 @@
 import { Component, HostListener, OnInit } from '@angular/core';
-import {CdkDragDrop, CdkDropList, CdkDrag, moveItemInArray, transferArrayItem} from '@angular/cdk/drag-drop';
+import {CdkDragDrop, CdkDropList, CdkDrag, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { SpotifyApiService } from '../../shared/spotify-api/spotify-api.service';
 import { catchError } from 'rxjs';
 import { SpotifyPlaylist } from '../../shared/spotify-api/spotify-playlist';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
-import { PlaylistLink } from '../../shared/playlist_link';
+import { PlaylistLink } from '../../shared/playlist-link';
 import { HttpClient } from '@angular/common/http';
+import { GameSettings } from '../../shared/game-settings';
 
 interface GameTrack {
   date: Date,
@@ -17,6 +18,7 @@ interface GameTrack {
   id: string,
   track_url: SafeUrl,
   album_image_url: SafeUrl,
+  guessed_correct: boolean
 }
 
 function dateSub(date1: Date, date2: Date): number {
@@ -35,11 +37,15 @@ function shuffleArray(array: any[]) {
 @Component({
   selector: 'app-play',
   standalone: true,
-  imports: [CdkDropList, CdkDrag, CommonModule, FormsModule],
+  imports: [CdkDropList, CdkDrag, CommonModule, FormsModule, RouterModule],
   templateUrl: './play.component.html',
   styleUrl: './play.component.css'
 })
 export class PlayComponent implements OnInit {
+
+  gameSettings: GameSettings = {
+    keepWrongGuesses: false,
+  };
 
   constructor(
     private router: Router,
@@ -99,6 +105,8 @@ export class PlayComponent implements OnInit {
   }
 
   startGame(playlist: SpotifyPlaylist) {
+    const t = localStorage.getItem('game_settings');
+    if (t) this.gameSettings = {...this.gameSettings, ...JSON.parse(t)};
 
     this.gamePlaylist = playlist.items.map((v) => {
       let album_image_url = '';
@@ -110,6 +118,7 @@ export class PlayComponent implements OnInit {
         }
       }
       return {
+        guessed_correct: true,
         date: new Date(v.track.album.release_date),
         title: v.track.name,
         // artist: v.track.artists.map(v => v.name).join(', '),
@@ -157,9 +166,13 @@ export class PlayComponent implements OnInit {
     guessedLate: 0,
     totalDateOff: 0,
     totalSlotOff: 0,
+    streak: 0,
   };
 
   guess() {
+    this.dragInnerText = 'Drag Me!';
+
+    const track_n = this.tracks.length - 1;
     let i = this.tracks.findIndex(v => v == -1);
     const nTrack = this.gamePlaylist[this.track_n];
     let slotDiff = 0;
@@ -173,11 +186,11 @@ export class PlayComponent implements OnInit {
         i -= 1;
         slotDiff += 1;
       }
-    } else if (i < this.track_n && dateSub(nTrack.date, this.guessedTracks[i].date) > 0) {
+    } else if (i < track_n && dateSub(nTrack.date, this.guessedTracks[i].date) > 0) {
       dateDiff = -dateSub(nTrack.date, this.guessedTracks[i].date);
       slotDiff = -1;
       i += 1;
-      while (i < this.track_n) {
+      while (i < track_n) {
         if (dateSub(nTrack.date, this.guessedTracks[i].date) <= 0) break;
         i += 1;
         slotDiff -= 1;
@@ -192,21 +205,36 @@ export class PlayComponent implements OnInit {
       gameTrack: this.gamePlaylist[this.track_n],
     };
 
-    if (slotDiff == 0) this.totalStats.guessedRight += 1;
-    else this.totalStats.guessedWrong += 1;
+    if (slotDiff == 0) {
+      this.totalStats.guessedRight += 1;
+      this.totalStats.streak += 1;
+    } else {
+      this.totalStats.guessedWrong += 1;
+      this.totalStats.streak = 0;
+    }
     if (slotDiff < 0) this.totalStats.guessedEarly += 1;
     if (slotDiff > 0) this.totalStats.guessedLate += 1;
     this.totalStats.totalDateOff += Math.abs(dateDiff);
     this.totalStats.totalSlotOff += Math.abs(slotDiff);
 
-    this.guessedTracks.splice(i, 0, this.gamePlaylist[this.track_n]);
+    if (this.gameSettings.keepWrongGuesses || slotDiff == 0) {
+      this.guessedTracks.splice(i, 0, this.gamePlaylist[this.track_n]);
+      this.tracks = [...Array(this.tracks.length).keys()];
+    } else {
+      this.tracks = [...Array(this.tracks.length - 1).keys()];
+    }
+
+    if (slotDiff != 0) {
+      this.gamePlaylist[this.track_n].guessed_correct = false;
+    }
+
     this.track_n += 1;
-    this.tracks = [...Array(this.track_n).keys()];
+    // this.tracks = [...Array(this.tracks.length).keys()];
     this.newd = [-1];
 
     this.setSpotifyEmbedUrl(this.gamePlaylist[this.track_n].track_url);
 
-    // this.sendSpotifyEmbedCommand({command: 'play_from_start'});
+    if (slotDiff == 0) this.nextGuess();
   }
 
   nextGuess() {
@@ -222,12 +250,7 @@ export class PlayComponent implements OnInit {
 
   playbackSeekValue = 0;
 
-  spotifyPlaybackState: {
-    isPaused: boolean,
-    isBuffering: boolean,
-    duration: number,
-    position: number,
-  } = {
+  spotifyPlaybackState = {
     isPaused: true,
     isBuffering: true,
     duration: 0,
@@ -279,12 +302,14 @@ export class PlayComponent implements OnInit {
       if (event.data.type == 'ready') {
         this.spotifyEmbedReady = true;
         this.sendSpotifyEmbedCommand(this.replaySpotifyEmbedCommand);
+        this.spotifyPlaybackState.isBuffering = false;
         this.replaySpotifyEmbedCommand = null;
       } else if (event.data.type == 'playback_update') {
         this.spotifyPlaybackState = event.data.payload;
         this.playbackSeekValue = this.spotifyPlaybackState.position;
         if (this.spotifyPlaybackState.position == this.spotifyPlaybackState.duration) this.spotifyPlaybackState.isPaused = true;
         if (!navigator.userActivation.hasBeenActive) this.spotifyPlaybackState.isPaused = true;
+        // console.log(this.spotifyPlaybackState);
       } else {
         console.log(event);
       }
@@ -300,6 +325,22 @@ export class PlayComponent implements OnInit {
     }
     (<any>document.getElementById('spotify-embed')).contentWindow.postMessage(cmd, '*');
   }
+
+  dragInnerText = 'Drag Me!';
+
+  move(event: {currentIndex: number, item: {element: {nativeElement: Element}}}) {
+    let t = '';
+    if (event.currentIndex > 0) t += this.guessedTracks[event.currentIndex - 1].date.getFullYear();
+    t += ' − ';
+    if (event.currentIndex < this.guessedTracks.length) t += this.guessedTracks[event.currentIndex].date.getFullYear();
+    const els = document.getElementsByClassName('drag-live-hack');
+    for (let i = 0; i < els.length; i++) {
+      els[i].innerHTML = t;
+    }
+    this.dragInnerText = t;
+    // event.item.element.nativeElement.getElementsByClassName('drag-live-hack')[0].innerHTML = t;
+  }
+
 
   drop(event: CdkDragDrop<number[]>) {
     if (event.previousContainer === event.container) {

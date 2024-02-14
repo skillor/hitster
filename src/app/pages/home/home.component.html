@@ -8,7 +8,7 @@
       <p class="py-6">Enter a spotify playlist url or select a preconfigured list to play a game of Hitster!</p>
     </div>
     <div class="card shrink-0 w-full max-w-sm shadow-2xl bg-base-100">
-      <form class="card-body">
+      <div class="card-body">
         <div class="form-control">
           <label class="label">
             <span class="label-text">Spotify Playlist</span>
@@ -27,7 +27,24 @@
         <div class="form-control mt-6">
           <button class="btn btn-primary" [disabled]="!inputChange()" (click)="start()">Start</button>
         </div>
-      </form>
+
+        <ul class="menu rounded-box">
+          <li>
+            <details>
+              <summary>Advanced Settings</summary>
+              <div class="p-2 mt-2 bg-base-200 rounded-box">
+                <div class="form-control">
+                  <label class="label cursor-pointer">
+                    <span class="label-text">Keep wrong guesses</span>
+                    <input type="checkbox" checked="checked" class="checkbox" [(ngModel)]="settings.keepWrongGuesses" [ngModelOptions]="{standalone: true}" />
+                  </label>
+                </div>
+              </div>
+            </details>
+          </li>
+        </ul>
+
+      </div>
     </div>
   </div>
 </div>
