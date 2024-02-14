@@ -130,15 +130,17 @@ export class PlayComponent implements OnInit {
     }});
     shuffleArray(this.gamePlaylist);
 
-    this.guessedTracks = [
-      this.gamePlaylist[0],
-    ];
-    // console.log(this.gamePlaylist);
+    this.guessedTracks = this.gamePlaylist.slice(0, 1);
     this.loading = false;
 
-    this.setSpotifyEmbedUrl(this.gamePlaylist[this.track_n].track_url);
+    this.track_n = this.guessedTracks.length;
 
-    if (navigator.userActivation.hasBeenActive) this.sendSpotifyEmbedCommand({command: 'play_from_start'});
+    this.tracks = [...Array(this.track_n).keys()];
+
+    if (this.gamePlaylist.length > 1) this.setSpotifyEmbedUrl(this.gamePlaylist[this.track_n].track_url);
+    else if (this.gamePlaylist.length == 1) this.setSpotifyEmbedUrl(this.gamePlaylist[0].track_url);
+
+    if (navigator.userActivation.hasBeenActive && this.gamePlaylist.length >= 1) this.sendSpotifyEmbedCommand({command: 'play_from_start'});
   }
 
   gamePlaylist: GameTrack[] = [];
@@ -229,7 +231,6 @@ export class PlayComponent implements OnInit {
     }
 
     this.track_n += 1;
-    // this.tracks = [...Array(this.tracks.length).keys()];
     this.newd = [-1];
 
     this.setSpotifyEmbedUrl(this.gamePlaylist[this.track_n].track_url);
