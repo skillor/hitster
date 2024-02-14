@@ -68,15 +68,15 @@ export class PlayComponent implements OnInit {
 
     const playlist: PlaylistLink = JSON.parse(t);
 
-    // const playlistRaw = localStorage.getItem('spotify_playlist_raw');
+    const playlistCached = localStorage.getItem('cached_playlist');
 
-    // if (playlistRaw) {
-    //   this.startGame(JSON.parse(playlistRaw));
-    //   return;
-    // }
+    if (playlistCached) {
+      this.startGame(JSON.parse(playlistCached));
+      return;
+    }
 
     if (playlist.type == 'spotify') {
-      this.spotifyApi.playlist(playlist.payload).pipe(catchError((err, res) => {
+      this.spotifyApi.playlist(playlist.payload).pipe(catchError((err) => {
         if (err.status && err.status == 401) {
           this.spotifyApi.authorize();
           throw err;
@@ -84,8 +84,20 @@ export class PlayComponent implements OnInit {
         this.router.navigate(['home']);
         throw err;
       })).subscribe((res) => {
-        // console.log(res);
-        // localStorage.setItem('spotify_playlist_raw', JSON.stringify(res));
+        this.startGame(res);
+      });
+      return;
+    }
+
+    if (playlist.type == 'spotify-favorite') {
+      this.spotifyApi.savedTracks().pipe(catchError((err) => {
+        if (err.status && err.status == 401) {
+          this.spotifyApi.authorize();
+          throw err;
+        }
+        this.router.navigate(['home']);
+        throw err;
+      })).subscribe((res) => {
         this.startGame(res);
       });
       return;
@@ -107,6 +119,8 @@ export class PlayComponent implements OnInit {
   startGame(playlist: SpotifyPlaylist) {
     const t = localStorage.getItem('game_settings');
     if (t) this.gameSettings = {...this.gameSettings, ...JSON.parse(t)};
+
+    localStorage.setItem('cached_playlist', JSON.stringify(playlist));
 
     this.gamePlaylist = playlist.items.map((v) => {
       let album_image_url = '';

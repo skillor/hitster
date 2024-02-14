@@ -40,9 +40,10 @@
         <div class="drag-list-item rounded-lg bg-neutral text-neutral-content shadow-xl p-4 w-96 gap-3" cdkDrag cdkDragDisabled>
           <div class="flex flex-row items-center gap-3">
             <img class="w-24 h-fit" [src]="guessedTracks[number].album_image_url">
-            <div class="flex flex-col justify-center gap-2">
+            <div class="flex flex-col justify-center gap-2 text-left tooltip tooltip-bottom tooltip-primary"
+            attr.data-tip="{{guessedTracks[number].title}} - {{guessedTracks[number].artist}}">
               <div class="font-bold leading-6 line-clamp-2">{{guessedTracks[number].title}}</div>
-              <div class="line-clamp-2">{{guessedTracks[number].artist}}</div>
+              <div class="line-clamp-2" >{{guessedTracks[number].artist}}</div>
             </div>
           </div>
           <div class="flex flex-col items-center gap-2">

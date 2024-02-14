@@ -1,4 +1,4 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component } from '@angular/core';
 import { SpotifyApiService } from '../../shared/spotify-api/spotify-api.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -61,19 +61,28 @@ export class HomeComponent {
     keepWrongGuesses: true,
   };
 
+  startFavoriteTracks() {
+    this.startGame({type: 'spotify-favorite', payload: ''});
+  }
+
   start() {
     const r = this.inputChange();
     if (!r) return;
+    this.startGame(r);
+  }
+
+  startGame(r: PlaylistLink) {
+    localStorage.removeItem('cached_playlist');
 
     localStorage.setItem('game_settings', JSON.stringify(this.settings));
 
-    if (r.type == 'spotify') {
-      localStorage.setItem('playlist_link', JSON.stringify(r));
+    localStorage.setItem('playlist_link', JSON.stringify(r));
+
+    if (r.type == 'spotify' || r.type == 'spotify-favorite') {
       this.spotifyApi.authorize();
       return;
     }
     if (r.type == 'json') {
-      localStorage.setItem('playlist_link', JSON.stringify(r));
       this.router.navigate(['play'])
       return;
     }

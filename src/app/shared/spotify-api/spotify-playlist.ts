@@ -1,4 +1,4 @@
-// items(track(id,uri,name,duration_ms,artists(name),album(album_type,name,release_date,release_date_precision,images(url)))),total
+// items(track(id,uri,name,duration_ms,artists(name),album(album_type,name,release_date,release_date_precision,images(url)))),total,limit,offset
 
 export interface SpotifyTrack {
   track: {
@@ -28,7 +28,7 @@ export interface SpotifyTrack {
 
 export interface SpotifyPlaylist {
   items: SpotifyTrack[],
-  // offset: number,
-  // limit: number,
+  offset: number,
+  limit: number,
   total: number,
 };
