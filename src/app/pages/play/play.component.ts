@@ -11,7 +11,8 @@ import { PlaylistLink } from '../../shared/playlist-link';
 import { HttpClient } from '@angular/common/http';
 import { GameSettings } from '../../shared/game-settings';
 import * as confetti from 'canvas-confetti';
-import {Howl} from 'howler';
+import { Howl } from 'howler';
+import Rand from 'rand-seed';
 
 interface GameTrack {
   date: Date,
@@ -27,9 +28,13 @@ function dateSub(date1: Date, date2: Date): number {
   return date1.getFullYear() - date2.getFullYear()
 }
 
-function shuffleArray(array: any[]) {
+function generateSeed(length = 16, pool = '01234567890abcdefghijklmnopqrstuvwxyz'): string {
+  return [...new Array(16)].map((v) => pool[Math.floor(Math.random() * pool.length)]).join('');
+}
+
+function shuffleArray(array: any[], rng: Rand) {
   for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = Math.floor(rng.next() * (i + 1));
     const temp = array[i];
     array[i] = array[j];
     array[j] = temp;
@@ -119,9 +124,8 @@ export class PlayComponent implements OnInit {
       return;
     }
 
-    if (hasBeenActive()) {
+    if (hasBeenActive() && !this.isMobile) {
       this.startingModal = false;
-      if (this.isMobile) this.requestFullscreen();
     }
 
     const playlist: PlaylistLink = JSON.parse(t);
@@ -188,7 +192,11 @@ export class PlayComponent implements OnInit {
         track_url: this.sanitizer.bypassSecurityTrustResourceUrl(`https://open.spotify.com/embed/track/${v.track.id}?utm_source=generator`)
       // preview_url: this.sanitizer.bypassSecurityTrustResourceUrl(v.track.preview_url),
     }});
-    shuffleArray(this.gamePlaylist);
+
+    let seed = generateSeed();
+    if (this.gameSettings && this.gameSettings.seed) seed = this.gameSettings.seed;
+    else this.gameSettings.seed = seed;
+    shuffleArray(this.gamePlaylist, new Rand(seed));
 
     this.guessedTracks = this.gamePlaylist.slice(0, 1);
     // this.guessedTracks = this.gamePlaylist.slice(0, 15);
