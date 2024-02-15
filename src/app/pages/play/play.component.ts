@@ -186,6 +186,7 @@ export class PlayComponent implements OnInit {
     shuffleArray(this.gamePlaylist);
 
     this.guessedTracks = this.gamePlaylist.slice(0, 1);
+    // this.guessedTracks = this.gamePlaylist.slice(0, 15);
     this.loading = false;
 
     this.track_n = this.guessedTracks.length;
@@ -226,8 +227,13 @@ export class PlayComponent implements OnInit {
     streak: 0,
   };
 
-  guess() {
+  resetGuess() {
     this.dragInnerText = 'Drag Me!';
+    this.yearText = '';
+  }
+
+  guess() {
+    this.resetGuess();
 
     const track_n = this.tracks.length - 1;
     let i = this.tracks.findIndex(v => v == -1);
@@ -388,6 +394,8 @@ export class PlayComponent implements OnInit {
     (<any>document.getElementById('spotify-embed')).contentWindow.postMessage(cmd, '*');
   }
 
+  yearText = '';
+
   dragInnerText = 'Drag Me!';
 
   move(event: {currentIndex: number, item: {element: {nativeElement: Element}}}) {
@@ -400,6 +408,7 @@ export class PlayComponent implements OnInit {
       els[i].innerHTML = t;
     }
     this.dragInnerText = t;
+    this.yearText = t;
     // event.item.element.nativeElement.getElementsByClassName('drag-live-hack')[0].innerHTML = t;
   }
 
@@ -415,6 +424,15 @@ export class PlayComponent implements OnInit {
         event.currentIndex,
       );
     }
+  }
+
+  revert() {
+    this.newd = [-1];
+    const index = this.tracks.indexOf(-1);
+    if (index > -1) {
+      this.tracks.splice(index, 1);
+    }
+    this.resetGuess();
   }
 
   noReturnPredicate() {
