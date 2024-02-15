@@ -14,9 +14,11 @@ import { GameSettings } from '../../shared/game-settings';
   styleUrl: './home.component.css'
 })
 export class HomeComponent {
-  defaultPlaylist = 'assets/playlists/wild-mix.json';
+  defaultPlaylist = 'assets/playlists/classic-english.json';
 
   playlists = {
+    'Classic': 'assets/playlists/classic-english.json',
+    'Classic (Deutsch)': 'assets/playlists/classic-deutsch.json',
     'Wild Mix': 'assets/playlists/wild-mix.json',
     'Perfect Playlist': 'assets/playlists/perfect.json',
   };
