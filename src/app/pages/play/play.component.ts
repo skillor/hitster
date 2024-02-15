@@ -1,13 +1,13 @@
 import { Component, HostListener, OnInit } from '@angular/core';
 import {CdkDragDrop, CdkDropList, CdkDrag, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
 import { CommonModule } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { SpotifyApiService } from '../../shared/spotify-api/spotify-api.service';
-import { catchError } from 'rxjs';
-import { SpotifyPlaylist } from '../../shared/spotify-api/spotify-playlist';
+import { catchError, switchMap } from 'rxjs';
+import { SpotifyPlaylist, SpotifyPlaylistWithLink } from '../../shared/spotify-api/spotify-playlist';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
-import { PlaylistLink } from '../../shared/playlist-link';
+import { PlaylistLink, validatePlaylistLink } from '../../shared/playlist-link';
 import { HttpClient } from '@angular/common/http';
 import { GameSettings } from '../../shared/game-settings';
 import * as confetti from 'canvas-confetti';
@@ -56,6 +56,8 @@ export class PlayComponent implements OnInit {
 
   document = document;
 
+  playlistLink: PlaylistLink = validatePlaylistLink('assets/playlists/classic-english.json')!;
+
   gameSettings: GameSettings = {
     keepWrongGuesses: false,
   };
@@ -65,6 +67,7 @@ export class PlayComponent implements OnInit {
     private http: HttpClient,
     private spotifyApi: SpotifyApiService,
     private sanitizer: DomSanitizer,
+    private route: ActivatedRoute,
   ) {
     this.spotifyEmbedUrl = sanitizer.bypassSecurityTrustResourceUrl('');
   }
@@ -124,36 +127,77 @@ export class PlayComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    const t = localStorage.getItem('playlist_link');
+    this.route.queryParamMap.subscribe(() => this.initGame());
+  }
 
-    if (!t) {
+  initGame(): void {
+    this.loading = true;
+    this.startingModal = true;
+
+    this.menuModal = false;
+
+    let playlist: PlaylistLink | null = validatePlaylistLink(localStorage.getItem('playlist_link'));
+
+    const gameSettings = localStorage.getItem('game_settings');
+    if (gameSettings) this.gameSettings = {...this.gameSettings, ...JSON.parse(gameSettings)};
+
+    const queryPlaylistLink = validatePlaylistLink(this.route.snapshot.queryParamMap.get('p'));
+    if (queryPlaylistLink) playlist = queryPlaylistLink;
+
+    const queryGameSettings = this.route.snapshot.queryParamMap.get('s');
+    if (queryGameSettings) try {
+      this.gameSettings = {...this.gameSettings, ...JSON.parse(decodeURI(queryGameSettings))};
+    } catch {}
+
+    if (!this.gameSettings.seed) this.gameSettings.seed = generateSeed();
+
+    // console.log(playlist!.raw);
+    // console.log(this.gameSettings);
+
+    if (!playlist) {
       this.router.navigate(['home']);
       return;
     }
+
+    this.playlistLink = playlist;
+
+    this.router.navigate(
+      [],
+      {
+        relativeTo: this.route,
+        queryParams: {
+          p: this.playlistLink.raw,
+          s: JSON.stringify(this.gameSettings),
+        },
+        queryParamsHandling: 'merge',
+      }
+    );
 
     if (hasBeenActive() && !this.isMobile) {
       this.startingModal = false;
     }
 
-    const playlist: PlaylistLink = JSON.parse(t);
-
     const playlistCached = localStorage.getItem('cached_playlist');
 
     if (playlistCached) {
-      this.startGame(JSON.parse(playlistCached));
-      return;
+      const cached: SpotifyPlaylistWithLink = JSON.parse(playlistCached);
+      if (cached && cached.link == playlist.raw) return this.startGame(cached);
     }
 
-    if (playlist.type == 'spotify') {
-      this.spotifyApi.playlist(playlist.payload).pipe(catchError((err) => {
-        if (err.status && err.status == 401) {
-          this.spotifyApi.authorize();
+    if (playlist.type == 'spotify-playlist') {
+      this.spotifyApi.authorize().pipe(
+        catchError((err) => {
+          this.router.navigate(['home']);
           throw err;
-        }
-        this.router.navigate(['home']);
-        throw err;
-      })).subscribe((res) => {
-        this.startGame(res);
+        }),
+        switchMap(() => this.spotifyApi.playlist(this.playlistLink.payload).pipe(catchError((err) => {
+          this.router.navigate(['home']);
+          throw err;
+      })))).subscribe((res) => {
+        this.startGame({
+          ...res,
+          link: this.playlistLink.raw,
+        });
       });
       return;
     }
@@ -163,7 +207,10 @@ export class PlayComponent implements OnInit {
         this.router.navigate(['home']);
         throw err;
       })).subscribe((res) => {
-        this.startGame(res);
+        this.startGame({
+          ...res,
+          link: this.playlistLink.raw,
+        });
       });
       return;
     }
@@ -171,10 +218,7 @@ export class PlayComponent implements OnInit {
     this.router.navigate(['home']);
   }
 
-  startGame(playlist: SpotifyPlaylist) {
-    const t = localStorage.getItem('game_settings');
-    if (t) this.gameSettings = {...this.gameSettings, ...JSON.parse(t)};
-
+  startGame(playlist: SpotifyPlaylistWithLink) {
     localStorage.setItem('cached_playlist', JSON.stringify(playlist));
 
     this.gamePlaylist = playlist.items.filter(
@@ -200,10 +244,7 @@ export class PlayComponent implements OnInit {
       // preview_url: this.sanitizer.bypassSecurityTrustResourceUrl(v.track.preview_url),
     }});
 
-    let seed = generateSeed();
-    if (this.gameSettings && this.gameSettings.seed) seed = this.gameSettings.seed;
-    else this.gameSettings.seed = seed;
-    shuffleArray(this.gamePlaylist, new Rand(seed));
+    shuffleArray(this.gamePlaylist, new Rand(this.gameSettings.seed));
 
     this.guessedTracks = this.gamePlaylist.slice(0, 1);
     // this.guessedTracks = this.gamePlaylist.slice(0, 15);

@@ -38,21 +38,23 @@
           </button>
         </div>
 
-        <ul class="menu rounded-box">
-          <li>
-            <details>
-              <summary>Advanced Settings</summary>
-              <div class="p-2 mt-2 bg-base-200 rounded-box">
-                <div class="form-control">
-                  <label class="label cursor-pointer">
-                    <span class="label-text">Keep wrong guesses</span>
-                    <input type="checkbox" checked="checked" class="checkbox" [(ngModel)]="settings.keepWrongGuesses" [ngModelOptions]="{standalone: true}" />
-                  </label>
-                </div>
-              </div>
-            </details>
-          </li>
-        </ul>
+        <details class="collapse bg-base-200 collapse-arrow">
+          <summary class="collapse-title bg-neutral">Advanced Settings</summary>
+          <div class="collapse-content">
+            <div class="form-control">
+              <label class="label gap-2 justify-end">
+                <span class="label-text">Seed</span>
+                <input class="input input-sm" placeholder="Keep empty for random" [(ngModel)]="settings.seed" [ngModelOptions]="{standalone: true}" />
+              </label>
+            </div>
+            <div class="form-control">
+              <label class="label gap-3 justify-end cursor-pointer">
+                <span class="label-text">Keep wrong guesses</span>
+                <input type="checkbox" checked="checked" class="checkbox" [(ngModel)]="settings.keepWrongGuesses" [ngModelOptions]="{standalone: true}" />
+              </label>
+            </div>
+          </div>
+        </details>
 
       </div>
     </div>

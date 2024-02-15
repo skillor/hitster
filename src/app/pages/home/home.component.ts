@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { SpotifyApiService } from '../../shared/spotify-api/spotify-api.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { PlaylistLink } from '../../shared/playlist-link';
+import { PlaylistLink, validatePlaylistLink } from '../../shared/playlist-link';
 import { Router } from '@angular/router';
 import { GameSettings } from '../../shared/game-settings';
 
@@ -32,6 +32,7 @@ export class HomeComponent {
 
     const t = localStorage.getItem('game_settings');
     if (t) this.settings = {...this.settings, ...JSON.parse(t)};
+    this.settings.seed = '';
 
     this.selectString = this.hiddenInputString;
 
@@ -40,34 +41,18 @@ export class HomeComponent {
 
   paste() {
     navigator.clipboard.readText().then((text) => {
-      if (this.validatePlaylistLink(text)) {
+      if (validatePlaylistLink(text)) {
         this.inputString = text;
         this.inputChange();
       }
     });
   }
 
-  validatePlaylistLink(t: string): PlaylistLink | null {
-    let i = t.indexOf('spotify.com/playlist/');
-    if (i >= 0) {
-      t = t.substring(i + 21);
-      i = t.indexOf('?');
-      if (i >= 0) t = t.substring(0, t.indexOf('?'))
-      return { type: 'spotify', payload: t };
-    }
-
-    if (t.endsWith('.json')) {
-      return { type: 'json', payload: t };
-    }
-
-    return null;
-  }
-
   validateInput(): PlaylistLink | null {
     let t = this.inputString;
     if (t == '') t = this.hiddenInputString;
 
-    return this.validatePlaylistLink(t);
+    return validatePlaylistLink(t);
   }
 
   inputString = '';
@@ -85,6 +70,7 @@ export class HomeComponent {
 
   settings: GameSettings = {
     keepWrongGuesses: true,
+    seed: '',
   };
 
   start() {
@@ -100,13 +86,9 @@ export class HomeComponent {
 
     localStorage.setItem('game_settings', JSON.stringify(this.settings));
 
-    localStorage.setItem('playlist_link', JSON.stringify(r));
+    localStorage.setItem('playlist_link', r.raw);
 
-    if (r.type == 'spotify') {
-      this.spotifyApi.authorize();
-      return;
-    }
-    if (r.type == 'json') {
+    if (r.type == 'spotify-playlist' || r.type == 'json') {
       this.router.navigate(['play'])
       return;
     }

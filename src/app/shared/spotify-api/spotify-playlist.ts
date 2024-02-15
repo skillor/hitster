@@ -33,3 +33,7 @@ export interface SpotifyPlaylist {
   limit: number,
   total: number,
 };
+
+export interface SpotifyPlaylistWithLink extends SpotifyPlaylist {
+  link: string,
+}

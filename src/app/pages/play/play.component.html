@@ -37,7 +37,7 @@
 
   <div class="w-full flex flex-col justify-center items-center flex-grow">
     <div id="all" cdkDropList cdkDropListAutoScrollStep="14" [cdkDropListData]="tracks" cdkDropListConnectedTo="newd"
-      class="drag-list flex flex-col w-full flex-grow justify-center items-center gap-3 px-2 py-16" (cdkDropListDropped)="drop($event)" (cdkDropListEntered)="move($event)" (cdkDropListSorted)="move($event)">
+      class="drag-list flex flex-col w-full flex-grow justify-center items-center gap-3 px-2 py-28" (cdkDropListDropped)="drop($event)" (cdkDropListEntered)="move($event)" (cdkDropListSorted)="move($event)">
       @for (number of tracks; track number;) {
 
       <ng-container *ngIf="number == -1">
@@ -183,7 +183,7 @@
   <iframe id="spotify-embed" style="display:hidden;" [src]="spotifyEmbedUrl" width="1" height="1" frameBorder="0" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture"></iframe>
 </div>
 <ng-template #loadingSpinner>
-  <div class="w-full text-center padding-inset-top mt-6">
+  <div *ngIf="!startingModal" class="w-full text-center padding-inset-top mt-6">
     <span class="loading loading-spinner loading-lg"></span>
   </div>
 </ng-template>
@@ -191,7 +191,7 @@
   <div class="modal-box flex flex-col justify-center items-center text-center gap-4">
     <h3 class="text-2xl">Welcome to your game of Hitster!</h3>
     <button class="btn w-full" [ngClass]="{'btn-primary btn-lg': !loading}">
-      <span *ngIf="loading"><span class="loading loading-spinner"></span>Loading</span>
+      <span *ngIf="loading" class="loading loading-spinner"></span>
       <span *ngIf="!loading" class="text-xl font-bold">Start</span>
     </button>
   </div>

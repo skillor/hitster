@@ -10,13 +10,14 @@ import { Router } from '@angular/router';
 export class SpotifyApiService {
   constructor(private http: HttpClient, private router: Router) { }
 
-  authorize(): void {
-    this.http.get<{accessToken?: string}>('https://api.codetabs.com/v1/proxy/?quest=https://open.spotify.com/get_access_token').subscribe((r) => {
-      if (r.accessToken) {
-        localStorage.setItem(`spotify_token`, r.accessToken);
+  authorize(): Observable<string> {
+    return this.http.get<{accessToken?: string}>('https://api.codetabs.com/v1/proxy/?quest=https://open.spotify.com/get_access_token').pipe(map((r) => {
+      if (!r.accessToken) {
+        throw new Error('Access token not provided');
       }
-      this.router.navigate(['play']);
-    });
+      localStorage.setItem(`spotify_token`, r.accessToken);
+      return r.accessToken;
+    }));
   }
 
   playlist(playlistId: string): Observable<SpotifyPlaylist> {
