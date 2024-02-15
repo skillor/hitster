@@ -109,7 +109,7 @@ export class PlayComponent implements OnInit {
     localStorage.setItem('cached_playlist', JSON.stringify(playlist));
 
     this.gamePlaylist = playlist.items.filter(
-      (v) => v.track.is_playable
+      (v) => v.track.is_playable !== false,
     ).map((v) => {
       let album_image_url = '';
       if (v.track.album.images.length > 0) album_image_url = v.track.album.images[0].url;
