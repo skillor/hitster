@@ -20,7 +20,7 @@ module.exports = {
         mydark: {
           "color-scheme": "dark",
           "primary": "#7582ff",
-          "secondary": "#ae47e6",
+          "secondary": "#c484e7",
           "accent": "#00c7b5",
           "neutral": "#2a323c",
           "neutral-content": "#A6ADBB",
