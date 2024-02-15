@@ -26,9 +26,10 @@ export class SpotifyApiService {
   tracks(url: string, limit = 50, offset = 0): Observable<SpotifyPlaylist> {
     return this.http.get<SpotifyPlaylist>(url, {
       params: {
-        fields: 'items(track(id,uri,name,duration_ms,artists(name),album(album_type,name,release_date,release_date_precision,images(url)))),total,limit,offset',
+        fields: 'items(track(is_playable,id,uri,name,duration_ms,artists(name),album(album_type,name,release_date,release_date_precision,images(url)))),total,limit,offset',
         offset: offset,
         limit: limit,
+        market: Intl.DateTimeFormat().resolvedOptions().locale.toUpperCase(),
       },
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('spotify_token')}`,

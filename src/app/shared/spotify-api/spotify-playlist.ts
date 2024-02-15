@@ -1,4 +1,4 @@
-// items(track(id,uri,name,duration_ms,artists(name),album(album_type,name,release_date,release_date_precision,images(url)))),total,limit,offset
+// items(track(is_playable,id,uri,name,duration_ms,artists(name),album(album_type,name,release_date,release_date_precision,images(url)))),total,limit,offset
 
 export interface SpotifyTrack {
   track: {
@@ -14,6 +14,7 @@ export interface SpotifyTrack {
       }],
       // total_tracks: number,
     },
+    is_playable: boolean,
     id: string,
     uri: string
     name: string,
