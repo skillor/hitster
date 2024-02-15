@@ -9,3 +9,11 @@ body {
 .overflow-anywhere {
   overflow-wrap: anywhere;
 }
+
+.padding-inset-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+.padding-inset-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
