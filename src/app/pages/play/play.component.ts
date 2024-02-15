@@ -54,6 +54,8 @@ function hasBeenActive(): boolean {
 })
 export class PlayComponent implements OnInit {
 
+  document = document;
+
   gameSettings: GameSettings = {
     keepWrongGuesses: false,
   };
@@ -71,7 +73,7 @@ export class PlayComponent implements OnInit {
 
   startingModal = true;
 
-  fullscreenModal = false;
+  menuModal = false;
 
   isMobile = [
     /Android/i,
@@ -97,13 +99,18 @@ export class PlayComponent implements OnInit {
 
   skipNextResize = true;
 
-  reenterFullscreen() {
-    (<any>document.body.style).zoom = 1.0;
-    document.body.style.webkitTransform = 'scale(1)';
-    (<any>document.body.style).msTransform = 'scale(1)';
-    (<any>document.body.style).transform = 'scale(1)';
-    this.requestFullscreen();
-    this.fullscreenModal = false;
+  openMenu() {
+    this.menuModal = true;
+  }
+
+  closeMenu() {
+    // if (this.isMobile) this.requestFullscreen();
+    this.menuModal = false;
+  }
+
+  toggleFullscreen() {
+    if (document.fullscreenElement) this.document.exitFullscreen().catch(() => {});
+    else this.requestFullscreen();
   }
 
   @HostListener('window:resize', ['$event'])
@@ -113,7 +120,7 @@ export class PlayComponent implements OnInit {
       setTimeout(() => this.skipNextResize = false, 100);
       return;
     }
-    if (this.isMobile) this.fullscreenModal = true;
+    if (this.isMobile) this.menuModal = true;
   }
 
   ngOnInit(): void {
