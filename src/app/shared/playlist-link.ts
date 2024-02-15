@@ -1,4 +1,4 @@
 export interface PlaylistLink {
-  type: 'spotify' | 'json' | 'spotify-favorite',
+  type: 'spotify' | 'json',
   payload: string,
 }

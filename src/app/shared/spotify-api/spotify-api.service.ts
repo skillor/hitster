@@ -1,29 +1,26 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, map, of, switchMap } from 'rxjs';
-import { OauthApi } from '../oauth-api/oauth-api';
 import { SpotifyPlaylist } from './spotify-playlist';
+import { Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root'
 })
-export class SpotifyApiService extends OauthApi {
-  authClientId = '7c99dc0bed3d454493f3a3c32208e4ba';
-  authUrl = 'https://accounts.spotify.com/authorize';
-  authScope = 'user-read-private user-library-read';
-  authRedirectUri = location.origin + location.pathname;
-  authName = 'spotify';
+export class SpotifyApiService {
+  constructor(private http: HttpClient, private router: Router) { }
 
-  constructor(private http: HttpClient) {
-    super();
+  authorize(): void {
+    this.http.get<{accessToken?: string}>('https://api.codetabs.com/v1/proxy/?quest=https://open.spotify.com/get_access_token').subscribe((r) => {
+      if (r.accessToken) {
+        localStorage.setItem(`spotify_token`, r.accessToken);
+      }
+      this.router.navigate(['play']);
+    });
   }
 
   playlist(playlistId: string): Observable<SpotifyPlaylist> {
     return this.tracks(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, 100);
-  }
-
-  savedTracks(): Observable<SpotifyPlaylist> {
-    return this.tracks('https://api.spotify.com/v1/me/tracks', 50);
   }
 
   tracks(url: string, limit = 50, offset = 0): Observable<SpotifyPlaylist> {

@@ -25,10 +25,10 @@
           </select>
         </div>
         <div class="form-control mt-6">
-          <button class="btn btn-primary" [disabled]="!inputChange()" (click)="start()">Start</button>
-        </div>
-        <div class="form-control mt-2">
-          <button class="btn btn-secondary" (click)="startFavoriteTracks()">Start with your favorite Tracks!</button>
+          <button class="btn btn-primary" [disabled]="!inputChange() || loading" (click)="start()">
+            <ng-container *ngIf="!loading; else loadingT">Start</ng-container>
+            <ng-template #loadingT><span class="loading loading-spinner loading-lg"></span></ng-template>
+          </button>
         </div>
 
         <ul class="menu rounded-box">

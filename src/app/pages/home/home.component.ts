@@ -20,6 +20,8 @@ export class HomeComponent {
     'Ultimate Playlist': 'assets/playlists/ultimate.json',
   };
 
+  loading = false;
+
   constructor(private router: Router, private spotifyApi: SpotifyApiService) { }
 
   ngOnInit(): void {
@@ -61,10 +63,6 @@ export class HomeComponent {
     keepWrongGuesses: true,
   };
 
-  startFavoriteTracks() {
-    this.startGame({type: 'spotify-favorite', payload: ''});
-  }
-
   start() {
     const r = this.inputChange();
     if (!r) return;
@@ -72,13 +70,15 @@ export class HomeComponent {
   }
 
   startGame(r: PlaylistLink) {
+    this.loading = true;
+
     localStorage.removeItem('cached_playlist');
 
     localStorage.setItem('game_settings', JSON.stringify(this.settings));
 
     localStorage.setItem('playlist_link', JSON.stringify(r));
 
-    if (r.type == 'spotify' || r.type == 'spotify-favorite') {
+    if (r.type == 'spotify') {
       this.spotifyApi.authorize();
       return;
     }

@@ -89,20 +89,6 @@ export class PlayComponent implements OnInit {
       return;
     }
 
-    if (playlist.type == 'spotify-favorite') {
-      this.spotifyApi.savedTracks().pipe(catchError((err) => {
-        if (err.status && err.status == 401) {
-          this.spotifyApi.authorize();
-          throw err;
-        }
-        this.router.navigate(['home']);
-        throw err;
-      })).subscribe((res) => {
-        this.startGame(res);
-      });
-      return;
-    }
-
     if (playlist.type == 'json') {
       this.http.get<SpotifyPlaylist>(playlist.payload).pipe(catchError((err) => {
         this.router.navigate(['home']);
