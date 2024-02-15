@@ -38,13 +38,16 @@ export class HomeComponent {
     this.validateInput();
   }
 
-  validateInput(): PlaylistLink | null {
-    let t = this.inputString;
+  paste() {
+    navigator.clipboard.readText().then((text) => {
+      if (this.validatePlaylistLink(text)) {
+        this.inputString = text;
+        this.inputChange();
+      }
+    });
+  }
 
-    if (t == '') {
-      t = this.hiddenInputString;
-    }
-
+  validatePlaylistLink(t: string): PlaylistLink | null {
     let i = t.indexOf('spotify.com/playlist/');
     if (i >= 0) {
       t = t.substring(i + 21);
@@ -58,6 +61,13 @@ export class HomeComponent {
     }
 
     return null;
+  }
+
+  validateInput(): PlaylistLink | null {
+    let t = this.inputString;
+    if (t == '') t = this.hiddenInputString;
+
+    return this.validatePlaylistLink(t);
   }
 
   inputString = '';
