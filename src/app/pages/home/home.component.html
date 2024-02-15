@@ -25,7 +25,7 @@
           </select>
         </div>
         <div class="form-control mt-6">
-          <button class="btn btn-primary" [disabled]="!inputChange() || loading" (click)="start()">
+          <button class="btn btn-primary" [disabled]="!validateInput() || loading" (click)="start()">
             <ng-container *ngIf="!loading; else loadingT">Start</ng-container>
             <ng-template #loadingT><span class="loading loading-spinner loading-lg"></span></ng-template>
           </button>

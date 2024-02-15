@@ -14,7 +14,7 @@ import { GameSettings } from '../../shared/game-settings';
   styleUrl: './home.component.css'
 })
 export class HomeComponent {
-  defaultPlaylist = 'assets/playlists/classic-english.json';
+  hiddenInputString = 'assets/playlists/classic-english.json';
 
   playlists = {
     'Classic': 'assets/playlists/classic-english.json',
@@ -33,14 +33,16 @@ export class HomeComponent {
     const t = localStorage.getItem('game_settings');
     if (t) this.settings = {...this.settings, ...JSON.parse(t)};
 
-    this.inputChange();
+    this.selectString = this.hiddenInputString;
+
+    this.validateInput();
   }
 
-  inputString = '';
-  inputChange(): PlaylistLink | null {
+  validateInput(): PlaylistLink | null {
     let t = this.inputString;
+
     if (t == '') {
-      t = this.defaultPlaylist;
+      t = this.hiddenInputString;
     }
 
     let i = t.indexOf('spotify.com/playlist/');
@@ -58,10 +60,17 @@ export class HomeComponent {
     return null;
   }
 
+  inputString = '';
+  inputChange(): PlaylistLink | null {
+    this.selectString = '';
+
+    return this.validateInput();
+  }
+
   selectString = '';
   selectChange() {
-    // console.log(this.selectString);
-    this.inputString = this.selectString;
+    this.inputString = '';
+    this.hiddenInputString = this.selectString;
   }
 
   settings: GameSettings = {
