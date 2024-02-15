@@ -10,6 +10,8 @@ import { FormsModule } from '@angular/forms';
 import { PlaylistLink } from '../../shared/playlist-link';
 import { HttpClient } from '@angular/common/http';
 import { GameSettings } from '../../shared/game-settings';
+import * as confetti from 'canvas-confetti';
+import {Howl} from 'howler';
 
 interface GameTrack {
   date: Date,
@@ -296,8 +298,34 @@ export class PlayComponent implements OnInit {
 
     this.setSpotifyEmbedUrl(this.gamePlaylist[this.track_n].track_url);
 
-    if (slotDiff == 0) this.nextGuess();
+    if (slotDiff == 0) {
+      this.nextGuess();
+
+      confetti.default({
+        shapes: ['star'],
+        colors: ['FFE400', 'FFBD00', 'E89400', 'FFCA6C', 'FDFFB8'],
+        particleCount: 50,
+        spread: 50,
+        gravity: 0,
+        decay: 0.95,
+        startVelocity: 20,
+        scalar: 0.75,
+        ticks: 50,
+        origin: {
+            y: 0.9,
+            x: 0.5,
+        },
+        zIndex: 5000,
+    });
+
+      this.rightSound.play();
+    } else {
+      this.wrongSound.play();
+    }
   }
+
+  rightSound: Howl = new Howl({src: 'assets/sound-effects/right.mp3'});
+  wrongSound: Howl = new Howl({src: 'assets/sound-effects/wrong.mp3'});
 
   nextGuess() {
     this.lastGuess = null;
