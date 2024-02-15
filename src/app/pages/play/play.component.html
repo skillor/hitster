@@ -37,7 +37,7 @@
       <ng-container *ngIf="number == -1">
         <div class="drag-list-item rounded-lg bg-primary text-primary-content shadow-xl p-4 w-[20rem] md:w-[30rem]" cdkDrag [cdkDragData]="number">
           <div class="font-bold text-3xl drag-live-hack">{{dragInnerText}}</div>
-          <button class="btn btn-neutral btn-circle" (click)="toggleOtherSong(gamePlaylist[track_n].track_url)">
+          <button class="btn btn-neutral btn-circle mr-3" (click)="toggleOtherSong(gamePlaylist[track_n].track_url)">
             <svg *ngIf="gamePlaylist[track_n].track_url != spotifyEmbedUrl || spotifyPlaybackState.isPaused" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-6 h-6">
               <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" />
             </svg>
@@ -90,7 +90,7 @@
 
           <div class="drag-list-item rounded-lg bg-primary text-primary-content shadow-xl p-4 w-[20rem] md:w-[30rem]" cdkDrag [cdkDragData]="number">
             <div class="font-bold text-3xl drag-live-hack">{{dragInnerText}}</div>
-            <button class="btn btn-neutral btn-circle" (click)="toggleOtherSong(gamePlaylist[track_n].track_url)">
+            <button class="btn btn-neutral btn-circle mr-3" (click)="toggleOtherSong(gamePlaylist[track_n].track_url)">
               <div [ngClass]="{'loading loading-spinner': spotifyPlaybackState.isBuffering && gamePlaylist[track_n].track_url == spotifyEmbedUrl}">
                 <svg *ngIf="gamePlaylist[track_n].track_url != spotifyEmbedUrl || spotifyPlaybackState.isPaused" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-6 h-6">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" />
