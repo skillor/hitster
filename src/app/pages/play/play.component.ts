@@ -58,6 +58,52 @@ export class PlayComponent implements OnInit {
 
   loading = true;
 
+  startingModal = true;
+
+  fullscreenModal = false;
+
+  isMobile = [
+    /Android/i,
+    /webOS/i,
+    /iPhone/i,
+    /iPad/i,
+    /iPod/i,
+    /BlackBerry/i,
+    /Windows Phone/i
+  ].some((item) => navigator.userAgent.match(item));
+
+  requestFullscreen() {
+    document.documentElement.requestFullscreen({ navigationUI: "hide" })
+    this.skipNextResize = true;
+  }
+
+  firstStart() {
+    if (this.loading) return;
+    if (this.isMobile) this.requestFullscreen();
+    this.startingModal = false;
+    this.sendSpotifyEmbedCommand({command: 'play_from_start'});
+  }
+
+  skipNextResize = true;
+
+  reenterFullscreen() {
+    (<any>document.body.style).zoom = 1.0;
+    document.body.style.webkitTransform = 'scale(1)';
+    (<any>document.body.style).msTransform = 'scale(1)';
+    (<any>document.body.style).transform = 'scale(1)';
+    this.requestFullscreen();
+    this.fullscreenModal = false;
+  }
+
+  @HostListener('window:resize', ['$event'])
+  resizeEvent(event: MessageEvent) {
+    if (this.skipNextResize) {
+      setTimeout(() => this.skipNextResize = false, 100);
+      return;
+    }
+    if (this.isMobile) this.fullscreenModal = true;
+  }
+
   ngOnInit(): void {
     const t = localStorage.getItem('playlist_link');
 
@@ -103,6 +149,8 @@ export class PlayComponent implements OnInit {
   }
 
   startGame(playlist: SpotifyPlaylist) {
+    if (navigator.userActivation.hasBeenActive && !this.isMobile) this.startingModal = false;
+
     const t = localStorage.getItem('game_settings');
     if (t) this.gameSettings = {...this.gameSettings, ...JSON.parse(t)};
 
@@ -142,7 +190,7 @@ export class PlayComponent implements OnInit {
     if (this.gamePlaylist.length > 1) this.setSpotifyEmbedUrl(this.gamePlaylist[this.track_n].track_url);
     else if (this.gamePlaylist.length == 1) this.setSpotifyEmbedUrl(this.gamePlaylist[0].track_url);
 
-    if (navigator.userActivation.hasBeenActive && this.gamePlaylist.length >= 1) this.sendSpotifyEmbedCommand({command: 'play_from_start'});
+    if (!this.startingModal && navigator.userActivation.hasBeenActive && this.gamePlaylist.length >= 1) this.sendSpotifyEmbedCommand({command: 'play_from_start'});
   }
 
   gamePlaylist: GameTrack[] = [];
@@ -324,7 +372,6 @@ export class PlayComponent implements OnInit {
         console.log(event);
       }
     }
-
   }
 
   sendSpotifyEmbedCommand(cmd: any) {

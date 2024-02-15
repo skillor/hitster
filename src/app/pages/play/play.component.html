@@ -1,5 +1,5 @@
 <div *ngIf="!loading; else loadingSpinner" class="flex flex-col" style="min-height: 100vh;">
-  <div class="bg-base-200 min-h-16" style="z-index: 500; position: sticky; top: 0; box-shadow: 0 0 2rem 1rem rgba(0,0,0,0.5);">
+  <div class="bg-base-200 min-h-16 sticky-overlay" style="top: 0;">
     <div class="w-full flex flex-row min-h-16 justify-center items-center p-4">
       <div class="flex w-[20rem] md:w-[30rem] justify-between flex-row">
         <div class="flex flex-row gap-1 items-center text-3xl font-bold">
@@ -81,7 +81,7 @@
     </div>
   </div>
 
-  <div class="bg-base-200 min-h-[11rem]" style="z-index: 500; position: sticky; bottom: 0; box-shadow: 0 0 2rem 1rem rgba(0,0,0,0.5);">
+  <div class="bg-base-200 min-h-[11rem] sticky-overlay" style="bottom: 0;">
     <div class="w-full flex flex-col min-h-[11rem] justify-end items-center gap-3 p-4">
       <ng-container *ngIf="track_n < gamePlaylist.length; else ending">
         <div [class.hidden]="newd.length == 0" id="newd" cdkDropList [cdkDropListData]="newd" cdkDropListConnectedTo="all" class="drag-list"
@@ -170,3 +170,26 @@
     <span class="loading loading-spinner loading-lg"></span>
   </div>
 </ng-template>
+<dialog class="modal modal-open" *ngIf="startingModal">
+  <div class="modal-box flex flex-col justify-center items-center text-center gap-4">
+    <h3 class="text-2xl">Welcome to your game of Hitster!</h3>
+    <button class="btn" [ngClass]="{'btn-primary btn-lg': !loading}">
+      <span *ngIf="loading"><span class="loading loading-spinner"></span>Loading</span>
+      <span *ngIf="!loading" class="text-xl font-bold">Start</span>
+    </button>
+  </div>
+  <div method="dialog" class="modal-backdrop" style="z-index: 3000;">
+    <button (click)="firstStart()">close</button>
+  </div>
+</dialog>
+<dialog class="modal modal-open" *ngIf="fullscreenModal">
+  <div class="modal-box flex flex-col justify-center items-center text-center gap-4">
+    <h3 class="text-2xl">You left fullscreen!</h3>
+    <button class="btn btn-primary btn-lg text-xl font-bold">
+      Enter Fullscreen
+    </button>
+  </div>
+  <div method="dialog" class="modal-backdrop" style="z-index: 3000;">
+    <button (click)="reenterFullscreen()">close</button>
+  </div>
+</dialog>
