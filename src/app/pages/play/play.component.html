@@ -130,7 +130,7 @@
           </button>
         </div>
 
-        <input type="range" min="0" [max]="spotifyPlaybackState.duration" class="range" (change)="seekPlayback()" [(ngModel)]="playbackSeekValue" [ngModelOptions]="{standalone: true}" />
+        <input type="range" min="0" [max]="spotifyPlaybackState.duration" class="range" (input)="seekPlaybackStart()" (change)="seekPlayback()" [(ngModel)]="playbackSeekValue" [ngModelOptions]="{standalone: true}" />
       </div>
     </div>
   </div>

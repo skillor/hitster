@@ -282,7 +282,14 @@ export class PlayComponent implements OnInit {
     }
   }
 
+  seekDragging = false;
+
+  seekPlaybackStart() {
+    this.seekDragging = true;
+  }
+
   seekPlayback() {
+    this.seekDragging = false;
     this.sendSpotifyEmbedCommand({command: 'seek', timestamp: this.playbackSeekValue / 1000});
     this.spotifyPlaybackState.position = this.playbackSeekValue;
     // console.log('seek');
@@ -309,7 +316,7 @@ export class PlayComponent implements OnInit {
         this.replaySpotifyEmbedCommand = null;
       } else if (event.data.type == 'playback_update') {
         this.spotifyPlaybackState = event.data.payload;
-        this.playbackSeekValue = this.spotifyPlaybackState.position;
+        if (!this.seekDragging) this.playbackSeekValue = this.spotifyPlaybackState.position;
         if (this.spotifyPlaybackState.position == this.spotifyPlaybackState.duration) this.spotifyPlaybackState.isPaused = true;
         if (!navigator.userActivation.hasBeenActive) this.spotifyPlaybackState.isPaused = true;
         // console.log(this.spotifyPlaybackState);
