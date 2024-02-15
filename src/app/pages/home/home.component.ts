@@ -28,6 +28,8 @@ export class HomeComponent {
   constructor(private router: Router, private spotifyApi: SpotifyApiService) { }
 
   ngOnInit(): void {
+    document.exitFullscreen().catch(() => {});
+
     const t = localStorage.getItem('game_settings');
     if (t) this.settings = {...this.settings, ...JSON.parse(t)};
 

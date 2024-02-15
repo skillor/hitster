@@ -119,6 +119,11 @@ export class PlayComponent implements OnInit {
       return;
     }
 
+    if (hasBeenActive()) {
+      this.startingModal = false;
+      if (this.isMobile) this.requestFullscreen();
+    }
+
     const playlist: PlaylistLink = JSON.parse(t);
 
     const playlistCached = localStorage.getItem('cached_playlist');
@@ -156,8 +161,6 @@ export class PlayComponent implements OnInit {
   }
 
   startGame(playlist: SpotifyPlaylist) {
-    if (hasBeenActive() && !this.isMobile) this.startingModal = false;
-
     const t = localStorage.getItem('game_settings');
     if (t) this.gameSettings = {...this.gameSettings, ...JSON.parse(t)};
 

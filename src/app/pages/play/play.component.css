@@ -1,3 +1,20 @@
+.flicker-animation {
+  animation: spin linear infinite alternate;
+  animation-duration: 0s;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(-7deg) scale(0.9);
+    filter: drop-shadow(0 0 0 crimson);
+  }
+  100% {
+    transform: rotate(+7deg) scale(1);
+    filter: drop-shadow(0 0 0.5rem crimson);
+  }
+}
+
+
 .sticky-overlay {
   box-shadow: 0 0 2rem 1rem rgb(0 0 0 / 0.25);
   z-index: 500;
