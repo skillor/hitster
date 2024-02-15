@@ -34,6 +34,10 @@ function shuffleArray(array: any[]) {
   }
 }
 
+function hasBeenActive(): boolean {
+  return navigator && navigator.userActivation && navigator.userActivation.hasBeenActive;
+}
+
 @Component({
   selector: 'app-play',
   standalone: true,
@@ -73,7 +77,7 @@ export class PlayComponent implements OnInit {
   ].some((item) => navigator.userAgent.match(item));
 
   requestFullscreen() {
-    document.documentElement.requestFullscreen({ navigationUI: "hide" })
+    document.documentElement.requestFullscreen({ navigationUI: "hide" });
     this.skipNextResize = true;
   }
 
@@ -97,6 +101,7 @@ export class PlayComponent implements OnInit {
 
   @HostListener('window:resize', ['$event'])
   resizeEvent(event: MessageEvent) {
+    if (this.startingModal) return;
     if (this.skipNextResize) {
       setTimeout(() => this.skipNextResize = false, 100);
       return;
@@ -149,7 +154,7 @@ export class PlayComponent implements OnInit {
   }
 
   startGame(playlist: SpotifyPlaylist) {
-    if (navigator.userActivation.hasBeenActive && !this.isMobile) this.startingModal = false;
+    if (hasBeenActive() && !this.isMobile) this.startingModal = false;
 
     const t = localStorage.getItem('game_settings');
     if (t) this.gameSettings = {...this.gameSettings, ...JSON.parse(t)};
@@ -190,7 +195,7 @@ export class PlayComponent implements OnInit {
     if (this.gamePlaylist.length > 1) this.setSpotifyEmbedUrl(this.gamePlaylist[this.track_n].track_url);
     else if (this.gamePlaylist.length == 1) this.setSpotifyEmbedUrl(this.gamePlaylist[0].track_url);
 
-    if (!this.startingModal && navigator.userActivation.hasBeenActive && this.gamePlaylist.length >= 1) this.sendSpotifyEmbedCommand({command: 'play_from_start'});
+    if (!this.startingModal && hasBeenActive() && this.gamePlaylist.length >= 1) this.sendSpotifyEmbedCommand({command: 'play_from_start'});
   }
 
   gamePlaylist: GameTrack[] = [];
@@ -366,7 +371,7 @@ export class PlayComponent implements OnInit {
         this.spotifyPlaybackState = event.data.payload;
         if (!this.seekDragging) this.playbackSeekValue = this.spotifyPlaybackState.position;
         if (this.spotifyPlaybackState.position == this.spotifyPlaybackState.duration) this.spotifyPlaybackState.isPaused = true;
-        if (!navigator.userActivation.hasBeenActive) this.spotifyPlaybackState.isPaused = true;
+        if (!hasBeenActive()) this.spotifyPlaybackState.isPaused = true;
         // console.log(this.spotifyPlaybackState);
       } else {
         console.log(event);

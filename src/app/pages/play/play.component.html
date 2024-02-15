@@ -52,10 +52,10 @@
         <div class="drag-list-item rounded-lg bg-neutral text-neutral-content shadow-xl p-4 w-[20rem] md:w-[30rem] gap-3" cdkDrag cdkDragDisabled>
           <div class="flex flex-row items-center gap-3">
             <img class="w-20 md:w-24 h-fit" [src]="guessedTracks[number].album_image_url">
-            <div class="flex flex-col justify-center gap-2 text-left tooltip tooltip-bottom tooltip-primary"
+            <div class="flex flex-col justify-center gap-2 text-left overflow-hidden tooltip tooltip-bottom tooltip-primary"
             attr.data-tip="{{guessedTracks[number].title}} - {{guessedTracks[number].artist}}">
-              <div class="font-bold leading-6 line-clamp-2">{{guessedTracks[number].title}}</div>
-              <div class="line-clamp-2" >{{guessedTracks[number].artist}}</div>
+              <div class="font-bold leading-6 line-clamp-2 overflow-anywhere">{{guessedTracks[number].title}}</div>
+              <div class="line-clamp-2 overflow-anywhere" >{{guessedTracks[number].artist}}</div>
             </div>
           </div>
           <div class="flex flex-col items-center gap-2">
@@ -141,9 +141,9 @@
       <div class="flex flex-row gap-3 justify-between">
         <div class="flex flex-row items-center gap-3">
           <img class="w-20 md:w-24 h-fit" [src]="lastGuess.gameTrack.album_image_url">
-          <div class="flex flex-col justify-center gap-2">
-            <div class="font-bold leading-6 line-clamp-2">{{lastGuess.gameTrack.title}}</div>
-            <div class="line-clamp-2">{{lastGuess.gameTrack.artist}}</div>
+          <div class="flex flex-col justify-center gap-2 overflow-hidden">
+            <div class="font-bold leading-6 line-clamp-2 overflow-anywhere">{{lastGuess.gameTrack.title}}</div>
+            <div class="line-clamp-2 overflow-anywhere">{{lastGuess.gameTrack.artist}}</div>
           </div>
         </div>
         <div class="flex flex-col items-center justify-center gap-2">
@@ -173,7 +173,7 @@
 <dialog class="modal modal-open" *ngIf="startingModal">
   <div class="modal-box flex flex-col justify-center items-center text-center gap-4">
     <h3 class="text-2xl">Welcome to your game of Hitster!</h3>
-    <button class="btn" [ngClass]="{'btn-primary btn-lg': !loading}">
+    <button class="btn w-full" [ngClass]="{'btn-primary btn-lg': !loading}">
       <span *ngIf="loading"><span class="loading loading-spinner"></span>Loading</span>
       <span *ngIf="!loading" class="text-xl font-bold">Start</span>
     </button>
@@ -184,12 +184,14 @@
 </dialog>
 <dialog class="modal modal-open" *ngIf="fullscreenModal">
   <div class="modal-box flex flex-col justify-center items-center text-center gap-4">
-    <h3 class="text-2xl">You left fullscreen!</h3>
-    <button class="btn btn-primary btn-lg text-xl font-bold">
+    <a class="btn btn-secondary w-full btn-lg text-xl font-bold" routerLink="/home">
+      New Game
+    </a>
+    <button class="btn btn-primary w-full btn-lg text-xl font-bold" (click)="reenterFullscreen()">
       Enter Fullscreen
     </button>
   </div>
-  <div method="dialog" class="modal-backdrop" style="z-index: 3000;">
+  <div method="dialog" class="modal-backdrop">
     <button (click)="reenterFullscreen()">close</button>
   </div>
 </dialog>

@@ -5,3 +5,7 @@
 body {
   overscroll-behavior-y: none;
 }
+
+.overflow-anywhere {
+  overflow-wrap: anywhere;
+}
