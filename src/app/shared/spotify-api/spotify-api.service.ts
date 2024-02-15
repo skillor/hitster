@@ -26,7 +26,6 @@ export class SpotifyApiService {
   tracks(url: string, limit = 50, offset = 0): Observable<SpotifyPlaylist> {
     return this.http.get<SpotifyPlaylist>(url, {
       params: {
-        market: 'DE',
         fields: 'items(track(id,uri,name,duration_ms,artists(name),album(album_type,name,release_date,release_date_precision,images(url)))),total,limit,offset',
         offset: offset,
         limit: limit,
