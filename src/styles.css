@@ -38,23 +38,29 @@ body {
 @keyframes bg-success-to-neutral {
   0% {
     background-color: oklch(var(--n));
+    color: oklch(var(--nc));
   }
   20% {
     background-color: oklch(var(--su));
+    color: oklch(var(--suc));
   }
   100% {
     background-color: oklch(var(--n));
+    color: oklch(var(--nc));
   }
 }
 
 @keyframes bg-error-to-neutral {
   0% {
     background-color: oklch(var(--n));
+    color: oklch(var(--nc));
   }
   20% {
     background-color: oklch(var(--er));
+    color: oklch(var(--erc));
   }
   100% {
     background-color: oklch(var(--n));
+    color: oklch(var(--nc));
   }
 }

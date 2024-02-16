@@ -2,13 +2,13 @@
   <div class="bg-base-200 min-h-16 fixed-overlay padding-inset-top w-full" style="top: 0;">
     <div class="w-full flex flex-row min-h-16 justify-center items-center p-4">
       <div class="flex w-[20rem] md:w-[30rem] justify-between flex-row">
-        <div class="flex flex-row gap-2 items-center text-3xl font-bold">
+        <div class="flex flex-row gap-3 items-center text-3xl font-bold">
           <button class="btn btn-neutral" (click)="openMenu()">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
               <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
             </svg>
           </button>
-          <div class="flex flex-row items-center justify-center">
+          <div class="flex flex-row items-center justify-center gap-1">
             {{totalStats.streak}}
             <svg class="flicker-animation w-8 h-8" [ngStyle]="{'animation-duration': totalStats.streak ? '' + 1 / totalStats.streak + 's' : '0s'}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
               <path d="M26 19.3399C26 25.4393 20.9491 30.3451 14.8501 29.981C8.58145 29.6067 4.2892 23.5781 5.09774 17.2765C5.58685 13.4429 7.38361 10.1555 9.34008 7.6065C9.67947 7.16144 10.0288 10.7422 10.3782 10.3477C10.7276 9.94307 13.9717 4.32923 15.0997 2.35679C15.3093 1.99265 15.7884 1.88139 16.1278 2.14438C18.3937 3.85382 26 10.2769 26 19.3399Z" fill="#FF6723"/>
@@ -17,14 +17,14 @@
           </div>
         </div>
         <div class="flex flex-row items-center text-3xl font-bold gap-2">
-          <div class="flex flex-row items-center justify-center">
+          <div class="flex flex-row items-center justify-center gap-1">
             {{totalStats.guessedRight}}
             <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
               <path d="M2 6C2 3.79086 3.79086 2 6 2H26C28.2091 2 30 3.79086 30 6V26C30 28.2091 28.2091 30 26 30H6C3.79086 30 2 28.2091 2 26V6Z" fill="#00D26A"/>
               <path d="M13.242 23C12.8588 23 12.4757 22.8566 12.183 22.5692L6.43855 16.9278C5.85382 16.3535 5.85382 15.422 6.43855 14.8477C7.02329 14.2735 7.97186 14.2735 8.55659 14.8477L13.242 19.4491L23.4434 9.43069C24.0281 8.85644 24.9767 8.85644 25.5614 9.43069C26.1462 10.0049 26.1462 10.9365 25.5614 11.5107L14.301 22.5692C14.009 22.8566 13.6252 23 13.242 23Z" fill="#F4F4F4"/>
             </svg>
           </div>
-          <div class="flex flex-row items-center justify-center">
+          <div class="flex flex-row items-center justify-center gap-1">
             {{totalStats.guessedWrong}}
             <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
               <path d="M24.8787 2.87868C26.0503 1.70711 27.9497 1.70711 29.1213 2.87868C30.2929 4.05025 30.2929 5.94975 29.1213 7.12132L20.331 15.9116C20.2822 15.9604 20.2822 16.0396 20.331 16.0884L29.1213 24.8787C30.2929 26.0503 30.2929 27.9497 29.1213 29.1213C27.9497 30.2929 26.0503 30.2929 24.8787 29.1213L16.0884 20.331C16.0396 20.2822 15.9604 20.2822 15.9116 20.331L7.12132 29.1213C5.94975 30.2929 4.05025 30.2929 2.87868 29.1213C1.70711 27.9497 1.70711 26.0503 2.87868 24.8787L11.669 16.0884C11.7178 16.0396 11.7178 15.9604 11.669 15.9116L2.87868 7.12132C1.70711 5.94975 1.70711 4.05025 2.87868 2.87868C4.05025 1.70711 5.94975 1.70711 7.12132 2.87868L15.9116 11.669C15.9604 11.7178 16.0396 11.7178 16.0884 11.669L24.8787 2.87868Z" fill="#F92F60"/>

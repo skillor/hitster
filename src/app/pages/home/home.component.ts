@@ -26,6 +26,7 @@ export class HomeComponent {
   };
 
   loading = false;
+  clipboardError = false;
 
   constructor(private router: Router, private spotifyApi: SpotifyApiService) { }
 
@@ -46,6 +47,8 @@ export class HomeComponent {
       if (validatePlaylistLink(text)) {
         this.inputString = text;
         this.inputChange();
+      } else {
+        this.clipboardError = true;
       }
     }).catch(() => {});
   }
