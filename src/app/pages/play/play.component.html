@@ -41,7 +41,7 @@
       @for (number of tracks; track number;) {
 
       <ng-container *ngIf="number == -1">
-        <div [attr.id]="'drag-list-id-' + gamePlaylist[track_n].id" class="drag-list-item rounded-lg bg-primary text-primary-content shadow-xl p-4 w-[20rem] md:w-[30rem]" cdkDrag [cdkDragData]="number">
+        <div [attr.id]="'drag-list-id-' + gamePlaylist[track_n].id" class="drag-list-item rounded-lg bg-primary text-primary-content shadow-xl p-4 w-[20rem] md:w-[30rem]" cdkDrag [cdkDragData]="number" (cdkDragMoved)="dragMoved($event)" (cdkDragReleased)="dragReleased($event)" (cdkDragEnded)="dragEnded($event)">
           <div class="font-bold text-3xl drag-live-hack">{{dragInnerText}}</div>
           <button class="btn btn-neutral btn-circle mr-3" (click)="toggleOtherSong(gamePlaylist[track_n].track_url)">
             <svg *ngIf="gamePlaylist[track_n].track_url != spotifyEmbedUrl || spotifyPlaybackState.isPaused" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-6 h-6">
@@ -95,7 +95,7 @@
           (cdkDropListDropped)="drop($event)" [cdkDropListEnterPredicate]="noReturnPredicate">
           @for (number of newd; track number) {
 
-          <div [attr.id]="'drag-list-id-' + gamePlaylist[track_n].id" class="drag-list-item rounded-lg bg-primary text-primary-content shadow-xl p-4 w-[20rem] md:w-[30rem]" cdkDrag [cdkDragData]="number">
+          <div [attr.id]="'drag-list-id-' + gamePlaylist[track_n].id" class="drag-list-item rounded-lg bg-primary text-primary-content shadow-xl p-4 w-[20rem] md:w-[30rem]" cdkDrag [cdkDragData]="number" (cdkDragMoved)="dragMoved($event)" (cdkDragReleased)="dragReleased($event)" (cdkDragEnded)="dragEnded($event)">
             <div class="font-bold text-3xl drag-live-hack">{{dragInnerText}}</div>
             <button class="btn btn-neutral btn-circle mr-3" (click)="toggleOtherSong(gamePlaylist[track_n].track_url)">
               <div [ngClass]="{'loading loading-spinner': spotifyPlaybackState.isBuffering && gamePlaylist[track_n].track_url == spotifyEmbedUrl}">

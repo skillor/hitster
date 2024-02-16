@@ -1,9 +1,9 @@
-import { AfterContentChecked, Component, HostListener, OnInit, QueryList, ViewChildren } from '@angular/core';
-import {CdkDragDrop, CdkDropList, CdkDrag, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
+import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
+import {CdkDragDrop, CdkDropList, CdkDrag, moveItemInArray, transferArrayItem, CdkDragMove, CdkDragRelease, CdkDragEnd } from '@angular/cdk/drag-drop';
 import { CommonModule, Location } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { SpotifyApiService } from '../../shared/spotify-api/spotify-api.service';
-import { catchError, switchMap } from 'rxjs';
+import { Subscription, animationFrameScheduler, catchError, interval, switchMap } from 'rxjs';
 import { SpotifyPlaylist, SpotifyPlaylistWithLink } from '../../shared/spotify-api/spotify-playlist';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
@@ -52,10 +52,7 @@ function hasBeenActive(): boolean {
   templateUrl: './play.component.html',
   styleUrl: './play.component.css'
 })
-export class PlayComponent implements OnInit, AfterContentChecked {
-
-  @ViewChildren(CdkDropList)
-  droplists?: QueryList<CdkDropList<number>>;
+export class PlayComponent implements OnInit, OnDestroy {
 
   playlistLink: PlaylistLink = validatePlaylistLink('assets/playlists/classic-english.json')!;
 
@@ -77,79 +74,7 @@ export class PlayComponent implements OnInit, AfterContentChecked {
     this.spotifyEmbedUrl = sanitizer.bypassSecurityTrustResourceUrl('');
   }
 
-  droplistsInitialized = false;
-
-  initDroplists(): void {
-    if (!this.droplists) return;
-    for (let droplist of this.droplists) {
-      const _this = droplist._dropListRef;
-      const oldScroller = _this._startScrollingIfNecessary.bind(_this);
-      _this._startScrollingIfNecessary = (pointerX: number, pointerY: number) => {
-        const height = window.innerHeight || document.body.clientHeight;
-        const SCROLL_PROXIMITY_THRESHOLD = 0.25;
-        if (pointerY < height * SCROLL_PROXIMITY_THRESHOLD) {
-          const x = Math.min(1, (height * SCROLL_PROXIMITY_THRESHOLD - pointerY) / (SCROLL_PROXIMITY_THRESHOLD * height));
-          _this.autoScrollStep = x * x * 20;
-          oldScroller(0, 0);
-        } else if (pointerY > height * (1 - SCROLL_PROXIMITY_THRESHOLD)) {
-          const x = Math.min(1, (pointerY - height * (1 - SCROLL_PROXIMITY_THRESHOLD)) / (SCROLL_PROXIMITY_THRESHOLD * height));
-          _this.autoScrollStep = x * x * 20;
-          oldScroller(0, height);
-        } else {
-          oldScroller(0, height * 0.5);
-        }
-      };
-    }
-  }
-
-  scrollingIntoView: string | null = null;
-
-  _scrollIntoView() {
-    if (!this.scrollingIntoView) return;
-    const el = document.getElementById(this.scrollingIntoView);
-    if (el) {
-      const height = window.innerHeight || document.body.clientHeight;
-      const rect = el.getBoundingClientRect();
-      const dir = height * 0.5 - rect.y - (rect.height * 0.5);
-
-      const scrollPercentage = document.documentElement.scrollTop / (document.documentElement.scrollHeight - height);
-
-      // console.log(scrollPercentage, dir, Math.abs(dir) * 2 / document.documentElement.getBoundingClientRect().height);
-      const speed = Math.sqrt(Math.abs(dir) / document.documentElement.getBoundingClientRect().height) * 20;
-
-      if (dir > 0) {
-        // this.droplistScroller(0, 0, speed);
-      } else if (dir < 0) {
-        // this.droplistScroller(0, height, speed);
-      }
-
-      console.log(dir);
-      if (Math.abs(dir) < 20) {
-        // this.droplistScroller(0, height * 0.5, 1);
-        this.scrollingIntoView = null;
-        return;
-      }
-    }
-    // setTimeout(() => this._scrollIntoView(), 100);
-  }
-
-  scrollIntoView(id: string) {
-    // if (!this.droplistScroller) return;
-
-    this.scrollingIntoView = id;
-
-    this._scrollIntoView();
-  }
-
-  ngAfterContentChecked(): void {
-    if (!this.droplistsInitialized && this.droplists) {
-      this.droplistsInitialized = true;
-      this.droplists.changes.subscribe(() => {
-        this.initDroplists();
-      });
-      this.initDroplists();
-    }
-  }
+  currentScrollStep = 0;
 
   loading = true;
 
@@ -227,8 +152,20 @@ export class PlayComponent implements OnInit, AfterContentChecked {
     if (this.isMobile) this.openMenu();
   }
 
+  animationSubscription: Subscription | null = null;
+
   ngOnInit(): void {
     this.route.queryParamMap.subscribe(() => this.initGame());
+
+    this.animationSubscription = interval(0, animationFrameScheduler).subscribe(() => {
+      const scrollStep = this.currentScrollStep;
+
+      if (this.currentScrollStep != 0) document.documentElement.scrollBy(0, scrollStep);
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.animationSubscription?.unsubscribe();
   }
 
   initGame(): void {
@@ -484,8 +421,6 @@ export class PlayComponent implements OnInit, AfterContentChecked {
 
     this.setSpotifyEmbedUrl(this.gamePlaylist[this.track_n].track_url);
 
-    this.scrollIntoView('drag-list-id-'+this.lastGuess!.id);
-
     if (slotDiff == 0) {
       this.nextGuess();
 
@@ -609,6 +544,29 @@ export class PlayComponent implements OnInit, AfterContentChecked {
       return;
     }
     (<any>document.getElementById('spotify-embed')).contentWindow.postMessage(cmd, '*');
+  }
+
+  dragMoved(event: CdkDragMove) {
+    const pointerY = event.pointerPosition.y;
+    const height = window.innerHeight || document.body.clientHeight;
+    const SCROLL_PROXIMITY_THRESHOLD = 0.25;
+    if (pointerY < height * SCROLL_PROXIMITY_THRESHOLD) {
+      const x = Math.min(1, (height * SCROLL_PROXIMITY_THRESHOLD - pointerY) / (SCROLL_PROXIMITY_THRESHOLD * height));
+      this.currentScrollStep = -x * x * 20;
+    } else if (pointerY > height * (1 - SCROLL_PROXIMITY_THRESHOLD)) {
+      const x = Math.min(1, (pointerY - height * (1 - SCROLL_PROXIMITY_THRESHOLD)) / (SCROLL_PROXIMITY_THRESHOLD * height));
+      this.currentScrollStep = x * x * 20;
+    } else {
+      this.currentScrollStep = 0;
+    }
+  }
+
+  dragReleased(event: CdkDragRelease) {
+    this.currentScrollStep = 0;
+    // this.scrollIntoView('drag-list-id-'+this.gamePlaylist[this.track_n].id)
+  }
+
+  dragEnded(event: CdkDragEnd) {
   }
 
   yearText = '';
