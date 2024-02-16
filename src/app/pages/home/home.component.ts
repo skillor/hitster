@@ -14,6 +14,8 @@ import { GameSettings } from '../../shared/game-settings';
   styleUrl: './home.component.css'
 })
 export class HomeComponent {
+  hasClipboard = navigator.clipboard && navigator.clipboard.readText;
+
   hiddenInputString = 'assets/playlists/classic-english.json';
 
   playlists = {
@@ -45,7 +47,7 @@ export class HomeComponent {
         this.inputString = text;
         this.inputChange();
       }
-    });
+    }).catch(() => {});
   }
 
   validateInput(): PlaylistLink | null {

@@ -2,8 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
+* {
+  user-select: none;
+}
+
 body {
   overscroll-behavior-y: none;
+  overflow-y: scroll;
 }
 
 .overflow-anywhere {

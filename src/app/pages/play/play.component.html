@@ -36,7 +36,7 @@
   </div>
 
   <div class="w-full flex flex-col justify-center items-center flex-grow">
-    <div id="all" cdkDropList cdkDropListAutoScrollStep="14" [cdkDropListData]="tracks" cdkDropListConnectedTo="newd"
+    <div id="all" cdkDropList [cdkDropListData]="tracks" cdkDropListConnectedTo="newd"
       class="drag-list flex flex-col w-full flex-grow justify-center items-center gap-3 px-2 py-28" (cdkDropListDropped)="drop($event)" [cdkDropListSortPredicate]="sortPredicate()" (cdkDropListEntered)="move($event)" (cdkDropListSorted)="move($event)">
       @for (number of tracks; track number;) {
 
@@ -57,9 +57,10 @@
       <ng-container *ngIf="number != -1">
         <div class="drag-list-item rounded-lg bg-neutral text-neutral-content shadow-xl p-4 w-[20rem] md:w-[30rem] gap-3" cdkDrag cdkDragDisabled>
           <div class="flex flex-row items-center gap-3">
-            <img class="w-20 md:w-24 h-fit" [src]="guessedTracks[number].album_image_url">
-            <div class="flex flex-col justify-center gap-2 text-left overflow-hidden tooltip tooltip-bottom tooltip-primary"
-            attr.data-tip="{{guessedTracks[number].title}} - {{guessedTracks[number].artist}}">
+            <a class="btn rounded-none border-0 p-0 w-20 md:w-24 h-20 md:h-24 overflow-visible animate-none" draggable="false" [href]="'https://open.spotify.com/track/' + guessedTracks[number].id" target="_blank">
+              <img class="w-full h-full" draggable="false" [src]="guessedTracks[number].album_image_url">
+            </a>
+            <div class="flex flex-col justify-center gap-2 text-left overflow-hidden">
               <div class="font-bold leading-6 line-clamp-2 overflow-anywhere">{{guessedTracks[number].title}}</div>
               <div class="line-clamp-2 overflow-anywhere" >{{guessedTracks[number].artist}}</div>
             </div>
@@ -116,9 +117,16 @@
               <path stroke-linecap="round" stroke-linejoin="round" d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3" />
             </svg>
           </button>
-          <button class="btn btn-primary btn-lg font-bold text-3xl" (click)="guess()">
-            <span class="drag-live-hack">{{yearText}}</span>
-          </button>
+          <div class="join">
+            <div class="join-item rounded-lg flex justify-center items-center px-6 bg-primary text-primary-content font-bold text-2xl md:text-3xl">
+              <span class="drag-live-hack text-nowrap">{{yearText}}</span>
+            </div>
+            <button class="join-item btn btn-circle btn-success btn-lg" (click)="guess()">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3.5" stroke="currentColor" class="w-6 h-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+              </svg>
+            </button>
+          </div>
         </div>
       </ng-container>
       <ng-template #ending>
@@ -201,15 +209,33 @@
 </dialog>
 <dialog class="modal modal-open" *ngIf="menuModal">
   <div class="modal-box flex flex-col justify-center items-center text-center gap-4">
+    <div class="flex flex-row w-full gap-2">
+      <button class="flex-grow btn btn-lg text-xl font-bold" disabled>
+        Invite
+      </button>
+      <label class="btn btn-square btn-lg swap swap-rotate">
+
+        <input type="checkbox" (change)="shareGame()"/>
+
+        <svg class="swap-off fill-current w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 7.5 9.566 5.314m0 0a2.25 2.25 0 1 0 3.935 2.186 2.25 2.25 0 0 0-3.935-2.186Zm0-12.814a2.25 2.25 0 1 0 3.933-2.185 2.25 2.25 0 0 0-3.933 2.185Z" />
+        </svg>
+
+        <svg class="swap-on fill-current w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+          <path d="M2 6C2 3.79086 3.79086 2 6 2H26C28.2091 2 30 3.79086 30 6V26C30 28.2091 28.2091 30 26 30H6C3.79086 30 2 28.2091 2 26V6Z" fill="#00D26A"/>
+          <path d="M13.242 23C12.8588 23 12.4757 22.8566 12.183 22.5692L6.43855 16.9278C5.85382 16.3535 5.85382 15.422 6.43855 14.8477C7.02329 14.2735 7.97186 14.2735 8.55659 14.8477L13.242 19.4491L23.4434 9.43069C24.0281 8.85644 24.9767 8.85644 25.5614 9.43069C26.1462 10.0049 26.1462 10.9365 25.5614 11.5107L14.301 22.5692C14.009 22.8566 13.6252 23 13.242 23Z" fill="#F4F4F4"/>
+        </svg>
+
+      </label>
+    </div>
     <a class="btn btn-secondary w-full btn-lg text-xl font-bold" routerLink="/home">
       New Game
     </a>
-    <button class="btn btn-primary w-full btn-lg text-xl font-bold" *ngIf="isMobile" (click)="toggleFullscreen()">
-      <span *ngIf="document.fullscreenElement">Exit Fullscreen</span>
-      <span *ngIf="!document.fullscreenElement">Enter Fullscreen</span>
+    <button class="btn btn-neutral w-full btn-lg text-xl font-bold" (click)="restartGame()">
+      Restart
     </button>
     <div class="divider"></div>
-    <button class="btn btn-neutral w-full btn-lg text-xl font-bold" (click)="closeMenu()">
+    <button class="btn w-full btn-lg text-xl font-bold" (click)="closeMenu()">
       Continue
     </button>
   </div>

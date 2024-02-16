@@ -1,6 +1,6 @@
-import { Component, HostListener, OnInit } from '@angular/core';
+import { AfterContentChecked, Component, HostListener, OnInit, QueryList, ViewChildren } from '@angular/core';
 import {CdkDragDrop, CdkDropList, CdkDrag, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { SpotifyApiService } from '../../shared/spotify-api/spotify-api.service';
 import { catchError, switchMap } from 'rxjs';
@@ -52,7 +52,10 @@ function hasBeenActive(): boolean {
   templateUrl: './play.component.html',
   styleUrl: './play.component.css'
 })
-export class PlayComponent implements OnInit {
+export class PlayComponent implements OnInit, AfterContentChecked {
+
+  @ViewChildren(CdkDropList)
+  droplists?: QueryList<CdkDropList<number>>;
 
   document = document;
 
@@ -62,14 +65,51 @@ export class PlayComponent implements OnInit {
     keepWrongGuesses: false,
   };
 
+  firstDate = new Date('0000');
+  lastDate = new Date();
+
   constructor(
     private router: Router,
     private http: HttpClient,
     private spotifyApi: SpotifyApiService,
     private sanitizer: DomSanitizer,
     private route: ActivatedRoute,
+    private location: Location,
   ) {
     this.spotifyEmbedUrl = sanitizer.bypassSecurityTrustResourceUrl('');
+  }
+
+  droplistsInitialized = false;
+
+  initDroplists(): void {
+    if (!this.droplists) return;
+    for (let droplist of this.droplists) {
+      const _this = droplist._dropListRef;
+      const oldScroller = _this._startScrollingIfNecessary.bind(_this);
+      _this._startScrollingIfNecessary = (pointerX: number, pointerY: number) => {
+        const height = window.innerHeight || this.document.body.clientHeight;
+        const SCROLL_PROXIMITY_THRESHOLD = 0.2;
+        if (pointerY < height * SCROLL_PROXIMITY_THRESHOLD) {
+          _this.autoScrollStep = 20 * Math.min(1, (height * SCROLL_PROXIMITY_THRESHOLD - pointerY) / (SCROLL_PROXIMITY_THRESHOLD * height));
+          oldScroller(0, 0);
+        } else if (pointerY > height * (1 - SCROLL_PROXIMITY_THRESHOLD)) {
+          _this.autoScrollStep = 20 * Math.min(1, (pointerY - height * (1 - SCROLL_PROXIMITY_THRESHOLD)) / (SCROLL_PROXIMITY_THRESHOLD * height));
+          oldScroller(0, height);
+        } else {
+          oldScroller(0, height * 0.5);
+        }
+      };
+    }
+  }
+
+  ngAfterContentChecked(): void {
+    if (!this.droplistsInitialized && this.droplists) {
+      this.droplistsInitialized = true;
+      this.droplists.changes.subscribe(() => {
+        this.initDroplists();
+      });
+      this.initDroplists();
+    }
   }
 
   loading = true;
@@ -115,9 +155,30 @@ export class PlayComponent implements OnInit {
     if (this.menuPlayedPrev) this.sendSpotifyEmbedCommand({command: 'resume'});
   }
 
-  toggleFullscreen() {
-    if (document.fullscreenElement) this.document.exitFullscreen().catch(() => {});
-    else this.requestFullscreen();
+  shareGame() {
+    const el = document.createElement('input');
+    el.value = window.location.href;
+
+    el.style.top = '0';
+    el.style.left = '0';
+    el.style.position = 'fixed';
+
+    document.body.appendChild(el);
+    el.focus();
+    el.select();
+    document.execCommand('copy');
+
+    document.body.removeChild(el);
+  }
+
+  restartGame() {
+    if (!this.activePlaylist) {
+      this.router.navigate(['home'])
+      return;
+    }
+    this.menuModal = false;
+    this.gameSettings.seed = generateSeed();
+    this.startGame(this.activePlaylist);
   }
 
   @HostListener('window:resize', ['$event'])
@@ -158,18 +219,6 @@ export class PlayComponent implements OnInit {
     }
 
     this.playlistLink = playlist;
-
-    this.router.navigate(
-      [],
-      {
-        relativeTo: this.route,
-        queryParams: {
-          p: this.playlistLink.raw,
-          s: JSON.stringify(this.gameSettings),
-        },
-        queryParamsHandling: 'merge',
-      }
-    );
 
     if (hasBeenActive() && !this.isMobile) {
       this.startingModal = false;
@@ -216,8 +265,26 @@ export class PlayComponent implements OnInit {
     this.router.navigate(['home']);
   }
 
+  activePlaylist?: SpotifyPlaylistWithLink;
+
   startGame(playlist: SpotifyPlaylistWithLink) {
+    const url = this.router.createUrlTree(
+      [],
+      {
+        relativeTo: this.route,
+        queryParams: {
+          p: this.playlistLink.raw,
+          s: JSON.stringify(this.gameSettings),
+        },
+        queryParamsHandling: 'merge',
+      }
+    );
+
+    this.location.go(url.toString());
+
     localStorage.setItem('cached_playlist', JSON.stringify(playlist));
+
+    this.activePlaylist = playlist;
 
     this.gamePlaylist = playlist.items.filter(
       (v) => v.track.is_playable !== false,
@@ -242,15 +309,29 @@ export class PlayComponent implements OnInit {
       // preview_url: this.sanitizer.bypassSecurityTrustResourceUrl(v.track.preview_url),
     }});
 
-    shuffleArray(this.gamePlaylist, new Rand(this.gameSettings.seed));
+    this.gamePlaylist.sort((a, b) => a.date < b.date ? -1 : +1);
+
+    const rand = new Rand(this.gameSettings.seed);
+
+    if (this.gamePlaylist.length >= 1) {
+      const d = new Date(0);
+      d.setFullYear(this.gamePlaylist[0].date.getFullYear() - 1 - rand.next() * 50);
+      this.firstDate = d;
+    }
+
+    shuffleArray(this.gamePlaylist, rand);
 
     this.guessedTracks = this.gamePlaylist.slice(0, 1);
     // this.guessedTracks = this.gamePlaylist.sort((a, b) => a.date < b.date ? -1 : +1).slice(0, 15);
-    this.loading = false;
 
     this.track_n = this.guessedTracks.length;
 
     this.tracks = [...Array(this.track_n).keys()];
+    this.newd = [-1];
+
+    this.resetGuess();
+
+    this.loading = false;
 
     if (this.gamePlaylist.length > 1) this.setSpotifyEmbedUrl(this.gamePlaylist[this.track_n].track_url);
     else if (this.gamePlaylist.length == 1) this.setSpotifyEmbedUrl(this.gamePlaylist[0].track_url);
@@ -284,6 +365,7 @@ export class PlayComponent implements OnInit {
     totalDateOff: 0,
     totalSlotOff: 0,
     streak: 0,
+    highestStreak: 0,
   };
 
   resetGuess() {
@@ -332,6 +414,7 @@ export class PlayComponent implements OnInit {
       this.totalStats.streak += 1;
     } else {
       this.totalStats.guessedWrong += 1;
+      this.totalStats.highestStreak = Math.max(this.totalStats.highestStreak, this.totalStats.streak);
       this.totalStats.streak = 0;
     }
     if (slotDiff < 0) this.totalStats.guessedEarly += 1;
@@ -484,17 +567,18 @@ export class PlayComponent implements OnInit {
   dragInnerText = 'Drag Me!';
 
   move(event: {currentIndex: number, item: {element: {nativeElement: Element}}}) {
-    let t = '';
-    if (event.currentIndex > 0) t += this.guessedTracks[event.currentIndex - 1].date.getFullYear();
-    t += ' − ';
-    if (event.currentIndex < this.guessedTracks.length) t += this.guessedTracks[event.currentIndex].date.getFullYear();
+    let firstDate = this.firstDate;
+    if (event.currentIndex > 0) firstDate = this.guessedTracks[event.currentIndex - 1].date;
+    let lastDate = this.lastDate;
+    if (event.currentIndex < this.guessedTracks.length) lastDate = this.guessedTracks[event.currentIndex].date;
+    let t = `${firstDate.getFullYear()} − ${lastDate.getFullYear()}`
+    if (firstDate.getFullYear() == lastDate.getFullYear()) t = `${firstDate.getFullYear()}`;
     const els = document.getElementsByClassName('drag-live-hack');
     for (let i = 0; i < els.length; i++) {
       els[i].innerHTML = t;
     }
     this.dragInnerText = t;
     this.yearText = t;
-    // event.item.element.nativeElement.getElementsByClassName('drag-live-hack')[0].innerHTML = t;
   }
 
 
