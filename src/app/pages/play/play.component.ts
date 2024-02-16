@@ -311,15 +311,14 @@ export class PlayComponent implements OnInit, AfterContentChecked {
 
     this.gamePlaylist.sort((a, b) => a.date < b.date ? -1 : +1);
 
-    const rand = new Rand(this.gameSettings.seed);
-
     if (this.gamePlaylist.length >= 1) {
+      const firstYear = this.gamePlaylist[0].date.getFullYear();
       const d = new Date(0);
-      d.setFullYear(this.gamePlaylist[0].date.getFullYear() - 1 - rand.next() * 50);
+      d.setFullYear(firstYear - 1 - new Rand(String(firstYear) + playlist.link).next() * 50);
       this.firstDate = d;
     }
 
-    shuffleArray(this.gamePlaylist, rand);
+    shuffleArray(this.gamePlaylist, new Rand(this.gameSettings.seed));
 
     this.guessedTracks = this.gamePlaylist.slice(0, 1);
     // this.guessedTracks = this.gamePlaylist.sort((a, b) => a.date < b.date ? -1 : +1).slice(0, 15);
