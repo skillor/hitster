@@ -1,4 +1,4 @@
-import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewChecked, Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import {CdkDragDrop, CdkDropList, CdkDrag, moveItemInArray, transferArrayItem, CdkDragMove, CdkDragRelease, CdkDragEnd } from '@angular/cdk/drag-drop';
 import { CommonModule, Location } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -52,7 +52,7 @@ function hasBeenActive(): boolean {
   templateUrl: './play.component.html',
   styleUrl: './play.component.css'
 })
-export class PlayComponent implements OnInit, OnDestroy {
+export class PlayComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   playlistLink: PlaylistLink = validatePlaylistLink('assets/playlists/classic-english.json')!;
 
@@ -164,6 +164,15 @@ export class PlayComponent implements OnInit, OnDestroy {
     });
   }
 
+  viewChecked = false;
+
+  ngAfterViewChecked(): void {
+    if (!this.viewChecked) {
+      document.documentElement.scrollTo(0, document.documentElement.scrollHeight * 0.2);
+      this.viewChecked = true;
+    }
+  }
+
   ngOnDestroy(): void {
     this.animationSubscription?.unsubscribe();
   }
@@ -261,6 +270,7 @@ export class PlayComponent implements OnInit, OnDestroy {
     localStorage.setItem('cached_playlist', JSON.stringify(playlist));
 
     this.activePlaylist = playlist;
+    this.viewChecked = false;
 
     this.gamePlaylist = playlist.items.filter(
       (v) => v.track.is_playable !== false,

@@ -1,6 +1,6 @@
 <div *ngIf="!loading; else loadingSpinner" class="flex flex-col min-h-[100vh]">
-  <div class="bg-base-200 min-h-16 fixed-overlay padding-inset-top w-full" style="top: 0;">
-    <div class="w-full flex flex-row min-h-16 justify-center items-center p-4">
+  <div class="bg-base-200 min-h-[5rem] fixed-overlay padding-inset-top w-full" style="top: 0;">
+    <div class="w-full flex flex-row justify-center items-center p-4">
       <div class="flex w-[20rem] md:w-[30rem] justify-between flex-row">
         <div class="flex flex-row gap-3 items-center text-3xl font-bold">
           <button class="btn btn-neutral" (click)="openMenu()">
@@ -37,7 +37,7 @@
 
   <div class="w-full flex flex-col justify-center items-center flex-grow">
     <div id="all" cdkDropList [cdkDropListData]="tracks" cdkDropListConnectedTo="newd"
-      class="drag-list flex flex-col w-full flex-grow justify-center items-center gap-3 px-2 pt-48 pb-72" (cdkDropListDropped)="drop($event)" [cdkDropListSortPredicate]="sortPredicate()" (cdkDropListEntered)="move($event)" (cdkDropListSorted)="move($event)">
+      class="drag-list flex flex-col w-full flex-grow justify-center items-center gap-3 px-2" style="padding-top: calc(100vh - 11rem - 7rem); padding-bottom: calc(100vh - 5rem - 7rem)" (cdkDropListDropped)="drop($event)" [cdkDropListSortPredicate]="sortPredicate()" (cdkDropListEntered)="move($event)" (cdkDropListSorted)="move($event)">
       @for (number of tracks; track number;) {
 
       <ng-container *ngIf="number == -1">
