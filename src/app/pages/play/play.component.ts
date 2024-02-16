@@ -77,6 +77,7 @@ export class PlayComponent implements OnInit {
   startingModal = true;
 
   menuModal = false;
+  menuPlayedPrev = false;
 
   isMobile = [
     /Android/i,
@@ -104,13 +105,14 @@ export class PlayComponent implements OnInit {
 
   openMenu() {
     this.menuModal = true;
-
+    this.menuPlayedPrev = !this.spotifyPlaybackState.isPaused;
     this.sendSpotifyEmbedCommand({command: 'pause'});
   }
 
   closeMenu() {
     if (this.isMobile) this.requestFullscreen();
     this.menuModal = false;
+    if (this.menuPlayedPrev) this.sendSpotifyEmbedCommand({command: 'resume'});
   }
 
   toggleFullscreen() {
