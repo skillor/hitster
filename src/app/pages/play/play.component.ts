@@ -146,7 +146,7 @@ export class PlayComponent implements OnInit {
 
     const queryGameSettings = this.route.snapshot.queryParamMap.get('s');
     if (queryGameSettings) try {
-      this.gameSettings = {...this.gameSettings, ...JSON.parse(decodeURI(queryGameSettings))};
+      this.gameSettings = {...this.gameSettings, ...JSON.parse(queryGameSettings)};
     } catch {}
 
     if (!this.gameSettings.seed) this.gameSettings.seed = generateSeed();
