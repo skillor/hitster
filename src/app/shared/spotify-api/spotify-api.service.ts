@@ -30,7 +30,7 @@ export class SpotifyApiService {
         fields: 'items(track(is_playable,id,uri,name,duration_ms,artists(name),album(album_type,name,release_date,release_date_precision,images(url)))),total,limit,offset',
         offset: offset,
         limit: limit,
-        market: Intl.DateTimeFormat().resolvedOptions().locale.toUpperCase(),
+        market: Intl.DateTimeFormat().resolvedOptions().locale.split('-').at(-1)!.toUpperCase(),
       },
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('spotify_token')}`,
