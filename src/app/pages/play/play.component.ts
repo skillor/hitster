@@ -89,8 +89,8 @@ export class PlayComponent implements OnInit {
   ].some((item) => navigator.userAgent.match(item));
 
   requestFullscreen() {
-    document.documentElement.requestFullscreen({ navigationUI: "hide" });
-    this.skipNextResize = true;
+    document.documentElement.requestFullscreen({ navigationUI: "hide" }).then(() => setTimeout(() => this.skippingResize = false, 200));
+    this.skippingResize = true;
   }
 
   firstStart() {
@@ -100,7 +100,7 @@ export class PlayComponent implements OnInit {
     this.sendSpotifyEmbedCommand({command: 'play_from_start'});
   }
 
-  skipNextResize = true;
+  skippingResize = false;
 
   openMenu() {
     this.menuModal = true;
@@ -121,10 +121,7 @@ export class PlayComponent implements OnInit {
   @HostListener('window:resize', ['$event'])
   resizeEvent(event: MessageEvent) {
     if (this.startingModal) return;
-    if (this.skipNextResize) {
-      setTimeout(() => this.skipNextResize = false, 100);
-      return;
-    }
+    if (this.skippingResize) return;
     if (this.isMobile) this.openMenu();
   }
 
@@ -152,9 +149,6 @@ export class PlayComponent implements OnInit {
     } catch {}
 
     if (!this.gameSettings.seed) this.gameSettings.seed = generateSeed();
-
-    // console.log(playlist!.raw);
-    // console.log(this.gameSettings);
 
     if (!playlist) {
       this.router.navigate(['home']);
@@ -249,7 +243,7 @@ export class PlayComponent implements OnInit {
     shuffleArray(this.gamePlaylist, new Rand(this.gameSettings.seed));
 
     this.guessedTracks = this.gamePlaylist.slice(0, 1);
-    // this.guessedTracks = this.gamePlaylist.slice(0, 15);
+    // this.guessedTracks = this.gamePlaylist.sort((a, b) => a.date < b.date ? -1 : +1).slice(0, 15);
     this.loading = false;
 
     this.track_n = this.guessedTracks.length;
@@ -522,6 +516,12 @@ export class PlayComponent implements OnInit {
       this.tracks.splice(index, 1);
     }
     this.resetGuess();
+  }
+
+  sortPredicate(): (index: number, item: CdkDrag<number>) => boolean {
+    return (index: number, item: CdkDrag<number>) => {
+      return index == 0 || index >= this.guessedTracks.length || this.guessedTracks[index - 1].date.getFullYear() != this.guessedTracks[index].date.getFullYear();
+    };
   }
 
   noReturnPredicate() {

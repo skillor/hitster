@@ -37,7 +37,7 @@
 
   <div class="w-full flex flex-col justify-center items-center flex-grow">
     <div id="all" cdkDropList cdkDropListAutoScrollStep="14" [cdkDropListData]="tracks" cdkDropListConnectedTo="newd"
-      class="drag-list flex flex-col w-full flex-grow justify-center items-center gap-3 px-2 py-28" (cdkDropListDropped)="drop($event)" (cdkDropListEntered)="move($event)" (cdkDropListSorted)="move($event)">
+      class="drag-list flex flex-col w-full flex-grow justify-center items-center gap-3 px-2 py-28" (cdkDropListDropped)="drop($event)" [cdkDropListSortPredicate]="sortPredicate()" (cdkDropListEntered)="move($event)" (cdkDropListSorted)="move($event)">
       @for (number of tracks; track number;) {
 
       <ng-container *ngIf="number == -1">
@@ -187,7 +187,7 @@
     <span class="loading loading-spinner loading-lg"></span>
   </div>
 </ng-template>
-<dialog class="modal" [class.modal-open]="startingModal">
+<dialog class="modal modal-open" *ngIf="startingModal">
   <div class="modal-box flex flex-col justify-center items-center text-center gap-4">
     <h3 class="text-2xl">Welcome to your game of Hitster!</h3>
     <button class="btn w-full" [ngClass]="{'btn-primary btn-lg': !loading}">
@@ -199,7 +199,7 @@
     <button (click)="firstStart()">close</button>
   </div>
 </dialog>
-<dialog class="modal" [class.modal-open]="menuModal">
+<dialog class="modal modal-open" *ngIf="menuModal">
   <div class="modal-box flex flex-col justify-center items-center text-center gap-4">
     <a class="btn btn-secondary w-full btn-lg text-xl font-bold" routerLink="/home">
       New Game
