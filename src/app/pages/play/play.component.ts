@@ -21,7 +21,7 @@ interface GameTrack {
   id: string,
   track_url: SafeUrl,
   album_image_url: SafeUrl,
-  guessed_correct: boolean
+  guessed_correct: boolean,
 }
 
 function dateSub(date1: Date, date2: Date): number {
@@ -57,8 +57,6 @@ export class PlayComponent implements OnInit, AfterContentChecked {
   @ViewChildren(CdkDropList)
   droplists?: QueryList<CdkDropList<number>>;
 
-  document = document;
-
   playlistLink: PlaylistLink = validatePlaylistLink('assets/playlists/classic-english.json')!;
 
   gameSettings: GameSettings = {
@@ -87,19 +85,60 @@ export class PlayComponent implements OnInit, AfterContentChecked {
       const _this = droplist._dropListRef;
       const oldScroller = _this._startScrollingIfNecessary.bind(_this);
       _this._startScrollingIfNecessary = (pointerX: number, pointerY: number) => {
-        const height = window.innerHeight || this.document.body.clientHeight;
-        const SCROLL_PROXIMITY_THRESHOLD = 0.2;
+        const height = window.innerHeight || document.body.clientHeight;
+        const SCROLL_PROXIMITY_THRESHOLD = 0.25;
         if (pointerY < height * SCROLL_PROXIMITY_THRESHOLD) {
-          _this.autoScrollStep = 20 * Math.min(1, (height * SCROLL_PROXIMITY_THRESHOLD - pointerY) / (SCROLL_PROXIMITY_THRESHOLD * height));
+          const x = Math.min(1, (height * SCROLL_PROXIMITY_THRESHOLD - pointerY) / (SCROLL_PROXIMITY_THRESHOLD * height));
+          _this.autoScrollStep = x * x * 20;
           oldScroller(0, 0);
         } else if (pointerY > height * (1 - SCROLL_PROXIMITY_THRESHOLD)) {
-          _this.autoScrollStep = 20 * Math.min(1, (pointerY - height * (1 - SCROLL_PROXIMITY_THRESHOLD)) / (SCROLL_PROXIMITY_THRESHOLD * height));
+          const x = Math.min(1, (pointerY - height * (1 - SCROLL_PROXIMITY_THRESHOLD)) / (SCROLL_PROXIMITY_THRESHOLD * height));
+          _this.autoScrollStep = x * x * 20;
           oldScroller(0, height);
         } else {
           oldScroller(0, height * 0.5);
         }
       };
     }
+  }
+
+  scrollingIntoView: string | null = null;
+
+  _scrollIntoView() {
+    if (!this.scrollingIntoView) return;
+    const el = document.getElementById(this.scrollingIntoView);
+    if (el) {
+      const height = window.innerHeight || document.body.clientHeight;
+      const rect = el.getBoundingClientRect();
+      const dir = height * 0.5 - rect.y - (rect.height * 0.5);
+
+      const scrollPercentage = document.documentElement.scrollTop / (document.documentElement.scrollHeight - height);
+
+      // console.log(scrollPercentage, dir, Math.abs(dir) * 2 / document.documentElement.getBoundingClientRect().height);
+      const speed = Math.sqrt(Math.abs(dir) / document.documentElement.getBoundingClientRect().height) * 20;
+
+      if (dir > 0) {
+        // this.droplistScroller(0, 0, speed);
+      } else if (dir < 0) {
+        // this.droplistScroller(0, height, speed);
+      }
+
+      console.log(dir);
+      if (Math.abs(dir) < 20) {
+        // this.droplistScroller(0, height * 0.5, 1);
+        this.scrollingIntoView = null;
+        return;
+      }
+    }
+    // setTimeout(() => this._scrollIntoView(), 100);
+  }
+
+  scrollIntoView(id: string) {
+    // if (!this.droplistScroller) return;
+
+    this.scrollingIntoView = id;
+
+    this._scrollIntoView();
   }
 
   ngAfterContentChecked(): void {
@@ -320,8 +359,8 @@ export class PlayComponent implements OnInit, AfterContentChecked {
 
     shuffleArray(this.gamePlaylist, new Rand(this.gameSettings.seed));
 
-    this.guessedTracks = this.gamePlaylist.slice(0, 1);
-    // this.guessedTracks = this.gamePlaylist.sort((a, b) => a.date < b.date ? -1 : +1).slice(0, 15);
+    // this.guessedTracks = this.gamePlaylist.slice(0, 1);
+    this.guessedTracks = this.gamePlaylist.sort((a, b) => a.date < b.date ? -1 : +1).slice(0, 15);
 
     this.track_n = this.guessedTracks.length;
 
@@ -349,9 +388,13 @@ export class PlayComponent implements OnInit, AfterContentChecked {
   newd = [-1];
 
   lastGuess: {
+    id: string,
+    hideAnimation: boolean,
+    modalOpen: boolean,
     gameTrack: GameTrack,
     dateDiff: number,
     slotDiff: number,
+    correct: boolean,
     absDateDiff: number,
     absSlotDiff: number,
   } | null = null;
@@ -401,6 +444,10 @@ export class PlayComponent implements OnInit, AfterContentChecked {
     }
 
     this.lastGuess = {
+      id: nTrack.id,
+      hideAnimation: false,
+      modalOpen: true,
+      correct: slotDiff == 0,
       slotDiff,
       dateDiff,
       absSlotDiff: Math.abs(slotDiff),
@@ -437,6 +484,8 @@ export class PlayComponent implements OnInit, AfterContentChecked {
 
     this.setSpotifyEmbedUrl(this.gamePlaylist[this.track_n].track_url);
 
+    this.scrollIntoView('drag-list-id-'+this.lastGuess!.id);
+
     if (slotDiff == 0) {
       this.nextGuess();
 
@@ -459,6 +508,8 @@ export class PlayComponent implements OnInit, AfterContentChecked {
 
       this.rightSound.play();
     } else {
+      // this.nextGuess();
+
       this.wrongSound.play();
     }
   }
@@ -467,10 +518,9 @@ export class PlayComponent implements OnInit, AfterContentChecked {
   wrongSound: Howl = new Howl({src: 'assets/sound-effects/wrong.mp3'});
 
   nextGuess() {
-    this.lastGuess = null;
+    if (this.lastGuess) this.lastGuess.modalOpen = false;
 
     this.sendSpotifyEmbedCommand({command: 'play_from_start'});
-    // console.log('next');
   }
 
   spotifyEmbedReady = false;
@@ -566,12 +616,15 @@ export class PlayComponent implements OnInit, AfterContentChecked {
   dragInnerText = 'Drag Me!';
 
   move(event: {currentIndex: number, item: {element: {nativeElement: Element}}}) {
+    if (this.lastGuess) this.lastGuess.hideAnimation = true;
+
     let firstDate = this.firstDate;
     if (event.currentIndex > 0) firstDate = this.guessedTracks[event.currentIndex - 1].date;
     let lastDate = this.lastDate;
     if (event.currentIndex < this.guessedTracks.length) lastDate = this.guessedTracks[event.currentIndex].date;
     let t = `${firstDate.getFullYear()} − ${lastDate.getFullYear()}`
     if (firstDate.getFullYear() == lastDate.getFullYear()) t = `${firstDate.getFullYear()}`;
+
     const els = document.getElementsByClassName('drag-live-hack');
     for (let i = 0; i < els.length; i++) {
       els[i].innerHTML = t;

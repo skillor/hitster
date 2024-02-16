@@ -1,5 +1,5 @@
 <div *ngIf="!loading; else loadingSpinner" class="flex flex-col min-h-[100vh]">
-  <div class="bg-base-200 min-h-16 sticky-overlay padding-inset-top" style="top: 0;">
+  <div class="bg-base-200 min-h-16 fixed-overlay padding-inset-top w-full" style="top: 0;">
     <div class="w-full flex flex-row min-h-16 justify-center items-center p-4">
       <div class="flex w-[20rem] md:w-[30rem] justify-between flex-row">
         <div class="flex flex-row gap-2 items-center text-3xl font-bold">
@@ -37,11 +37,11 @@
 
   <div class="w-full flex flex-col justify-center items-center flex-grow">
     <div id="all" cdkDropList [cdkDropListData]="tracks" cdkDropListConnectedTo="newd"
-      class="drag-list flex flex-col w-full flex-grow justify-center items-center gap-3 px-2 py-28" (cdkDropListDropped)="drop($event)" [cdkDropListSortPredicate]="sortPredicate()" (cdkDropListEntered)="move($event)" (cdkDropListSorted)="move($event)">
+      class="drag-list flex flex-col w-full flex-grow justify-center items-center gap-3 px-2 pt-48 pb-72" (cdkDropListDropped)="drop($event)" [cdkDropListSortPredicate]="sortPredicate()" (cdkDropListEntered)="move($event)" (cdkDropListSorted)="move($event)">
       @for (number of tracks; track number;) {
 
       <ng-container *ngIf="number == -1">
-        <div class="drag-list-item rounded-lg bg-primary text-primary-content shadow-xl p-4 w-[20rem] md:w-[30rem]" cdkDrag [cdkDragData]="number">
+        <div [attr.id]="'drag-list-id-' + gamePlaylist[track_n].id" class="drag-list-item rounded-lg bg-primary text-primary-content shadow-xl p-4 w-[20rem] md:w-[30rem]" cdkDrag [cdkDragData]="number">
           <div class="font-bold text-3xl drag-live-hack">{{dragInnerText}}</div>
           <button class="btn btn-neutral btn-circle mr-3" (click)="toggleOtherSong(gamePlaylist[track_n].track_url)">
             <svg *ngIf="gamePlaylist[track_n].track_url != spotifyEmbedUrl || spotifyPlaybackState.isPaused" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-6 h-6">
@@ -55,7 +55,7 @@
       </ng-container>
 
       <ng-container *ngIf="number != -1">
-        <div class="drag-list-item rounded-lg bg-neutral text-neutral-content shadow-xl p-4 w-[20rem] md:w-[30rem] gap-3" cdkDrag cdkDragDisabled>
+        <div [attr.id]="'drag-list-id-' + guessedTracks[number].id" class="drag-list-item rounded-lg bg-neutral text-neutral-content shadow-xl p-4 w-[20rem] md:w-[30rem] gap-3" [ngClass]="lastGuess && !lastGuess.hideAnimation && !lastGuess.modalOpen && lastGuess.id == guessedTracks[number].id ? (lastGuess.correct ? 'animate-bg-success-to-neutral' : 'animate-bg-error-to-neutral') : ''" cdkDrag cdkDragDisabled>
           <div class="flex flex-row items-center gap-3">
             <a class="btn rounded-none border-0 p-0 w-20 md:w-24 h-20 md:h-24 overflow-visible animate-none" draggable="false" [href]="'https://open.spotify.com/track/' + guessedTracks[number].id" target="_blank">
               <img class="w-full h-full" draggable="false" [src]="guessedTracks[number].album_image_url">
@@ -88,14 +88,14 @@
     </div>
   </div>
 
-  <div class="bg-base-200 min-h-[11rem] sticky-overlay padding-inset-bottom" style="bottom: 0;">
+  <div class="bg-base-200 min-h-[11rem] fixed-overlay padding-inset-bottom w-full" style="bottom: 0;">
     <div class="w-full flex flex-col min-h-[11rem] justify-end items-center gap-3 p-4">
       <ng-container *ngIf="track_n < gamePlaylist.length; else ending">
         <div [class.hidden]="newd.length == 0" id="newd" cdkDropList [cdkDropListData]="newd" cdkDropListConnectedTo="all" class="drag-list"
           (cdkDropListDropped)="drop($event)" [cdkDropListEnterPredicate]="noReturnPredicate">
           @for (number of newd; track number) {
 
-          <div class="drag-list-item rounded-lg bg-primary text-primary-content shadow-xl p-4 w-[20rem] md:w-[30rem]" cdkDrag [cdkDragData]="number">
+          <div [attr.id]="'drag-list-id-' + gamePlaylist[track_n].id" class="drag-list-item rounded-lg bg-primary text-primary-content shadow-xl p-4 w-[20rem] md:w-[30rem]" cdkDrag [cdkDragData]="number">
             <div class="font-bold text-3xl drag-live-hack">{{dragInnerText}}</div>
             <button class="btn btn-neutral btn-circle mr-3" (click)="toggleOtherSong(gamePlaylist[track_n].track_url)">
               <div [ngClass]="{'loading loading-spinner': spotifyPlaybackState.isBuffering && gamePlaylist[track_n].track_url == spotifyEmbedUrl}">
@@ -158,9 +158,9 @@
     </div>
   </div>
 
-  <dialog class="modal" [class.modal-open]="lastGuess && lastGuess.slotDiff != 0">
+  <dialog class="modal" [class.modal-open]="lastGuess?.modalOpen">
     <div class="modal-box bg-error text-error-content">
-      <ng-container *ngIf="lastGuess && lastGuess.slotDiff != 0">
+      <ng-container *ngIf="lastGuess && !lastGuess.correct">
         <h3 class="font-bold text-lg md:text-2xl mb-3">Nope - You guessed too {{lastGuess.slotDiff > 0 ? 'late' : 'early'}}!</h3>
         <div class="flex flex-row gap-3 justify-between">
           <div class="flex flex-row items-center gap-3">

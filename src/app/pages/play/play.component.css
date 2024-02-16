@@ -15,14 +15,14 @@
 }
 
 
-.sticky-overlay {
+.fixed-overlay {
   box-shadow: 0 0 2rem 1rem rgb(0 0 0 / 0.25);
   z-index: 500;
-  position: sticky;
+  position: fixed;
 }
 
 @media (prefers-color-scheme: dark) {
-  .sticky-overlay {
+  .fixed-overlay {
     box-shadow: 0 0 2rem 1rem rgb(0 0 0 / 0.5);
   }
 }

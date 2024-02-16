@@ -22,3 +22,35 @@ body {
 .padding-inset-bottom {
   padding-bottom: env(safe-area-inset-bottom);
 }
+
+.animate-bg-success-to-neutral {
+  animation: bg-success-to-neutral 1.5s;
+}
+
+.animate-bg-error-to-neutral {
+  animation: bg-error-to-neutral 1.5s;
+}
+
+@keyframes bg-success-to-neutral {
+  0% {
+    background-color: oklch(var(--n));
+  }
+  20% {
+    background-color: oklch(var(--su));
+  }
+  100% {
+    background-color: oklch(var(--n));
+  }
+}
+
+@keyframes bg-error-to-neutral {
+  0% {
+    background-color: oklch(var(--n));
+  }
+  20% {
+    background-color: oklch(var(--er));
+  }
+  100% {
+    background-color: oklch(var(--n));
+  }
+}
