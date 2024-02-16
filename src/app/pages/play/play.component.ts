@@ -104,6 +104,8 @@ export class PlayComponent implements OnInit {
 
   openMenu() {
     this.menuModal = true;
+
+    this.sendSpotifyEmbedCommand({command: 'pause'});
   }
 
   closeMenu() {
@@ -123,7 +125,7 @@ export class PlayComponent implements OnInit {
       setTimeout(() => this.skipNextResize = false, 100);
       return;
     }
-    if (this.isMobile) this.menuModal = true;
+    if (this.isMobile) this.openMenu();
   }
 
   ngOnInit(): void {
