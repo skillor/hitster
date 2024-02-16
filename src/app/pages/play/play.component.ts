@@ -359,8 +359,8 @@ export class PlayComponent implements OnInit, AfterContentChecked {
 
     shuffleArray(this.gamePlaylist, new Rand(this.gameSettings.seed));
 
-    // this.guessedTracks = this.gamePlaylist.slice(0, 1);
-    this.guessedTracks = this.gamePlaylist.sort((a, b) => a.date < b.date ? -1 : +1).slice(0, 15);
+    this.guessedTracks = this.gamePlaylist.slice(0, 1);
+    // this.guessedTracks = this.gamePlaylist.sort((a, b) => a.date < b.date ? -1 : +1).slice(0, 15);
 
     this.track_n = this.guessedTracks.length;
 
