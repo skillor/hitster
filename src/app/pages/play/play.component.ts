@@ -109,7 +109,7 @@ export class PlayComponent implements OnInit {
   }
 
   closeMenu() {
-    // if (this.isMobile) this.requestFullscreen();
+    if (this.isMobile) this.requestFullscreen();
     this.menuModal = false;
   }
 
