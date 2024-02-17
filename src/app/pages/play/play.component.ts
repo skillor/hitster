@@ -13,6 +13,8 @@ import { GameSettings } from '../../shared/game-settings';
 import * as confetti from 'canvas-confetti';
 import { Howl } from 'howler';
 import Rand from 'rand-seed';
+import { PlaylistService } from '../../shared/playlist/playlist.service';
+import { isMobile } from '../../shared/utils';
 
 interface GameTrack {
   date: Date,
@@ -58,6 +60,8 @@ export class PlayComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   gameSettings: GameSettings = {
     keepWrongGuesses: false,
+    seed: '',
+    handleRemasters: 'remove',
   };
 
   firstDate = new Date('0000');
@@ -67,6 +71,7 @@ export class PlayComponent implements OnInit, OnDestroy, AfterViewChecked {
     private router: Router,
     private http: HttpClient,
     private spotifyApi: SpotifyApiService,
+    private playlistService: PlaylistService,
     private sanitizer: DomSanitizer,
     private route: ActivatedRoute,
     private location: Location,
@@ -83,26 +88,18 @@ export class PlayComponent implements OnInit, OnDestroy, AfterViewChecked {
   menuModal = false;
   menuPlayedPrev = false;
 
-  isMobile = [
-    /Android/i,
-    /webOS/i,
-    /iPhone/i,
-    /iPad/i,
-    /iPod/i,
-    /BlackBerry/i,
-    /Windows Phone/i
-  ].some((item) => navigator.userAgent.match(item));
+  isMobile = isMobile();
 
   requestFullscreen() {
     document.documentElement.requestFullscreen({ navigationUI: "hide" }).then(() => setTimeout(() => this.skippingResize = false, 200));
     this.skippingResize = true;
   }
 
-  firstStart() {
+  clickFirstStart() {
     if (this.loading) return;
     if (this.isMobile) this.requestFullscreen();
     this.startingModal = false;
-    this.sendSpotifyEmbedCommand({command: 'play_from_start'});
+    this.playPlaybackFromStart();
   }
 
   skippingResize = false;
@@ -217,19 +214,11 @@ export class PlayComponent implements OnInit, OnDestroy, AfterViewChecked {
     }
 
     if (playlist.type == 'spotify-playlist') {
-      this.spotifyApi.authorize().pipe(
-        catchError((err) => {
+      this.spotifyApi.playlist(this.playlistLink.payload).pipe(catchError((err) => {
           this.router.navigate(['home']);
           throw err;
-        }),
-        switchMap(() => this.spotifyApi.playlist(this.playlistLink.payload).pipe(catchError((err) => {
-          this.router.navigate(['home']);
-          throw err;
-      })))).subscribe((res) => {
-        this.startGame({
-          ...res,
-          link: this.playlistLink.raw,
-        });
+      })).subscribe((res) => {
+        this.firstStartGame(res);
       });
       return;
     }
@@ -239,15 +228,21 @@ export class PlayComponent implements OnInit, OnDestroy, AfterViewChecked {
         this.router.navigate(['home']);
         throw err;
       })).subscribe((res) => {
-        this.startGame({
-          ...res,
-          link: this.playlistLink.raw,
-        });
+        this.firstStartGame(res);
       });
       return;
     }
 
     this.router.navigate(['home']);
+  }
+
+  firstStartGame(playlist: SpotifyPlaylist) {
+    this.playlistService.handleRemasters(playlist, this.gameSettings).subscribe((res) => {
+      this.startGame({
+        ...res,
+        link: this.playlistLink.raw,
+      });
+    });
   }
 
   activePlaylist?: SpotifyPlaylistWithLink;
@@ -321,7 +316,7 @@ export class PlayComponent implements OnInit, OnDestroy, AfterViewChecked {
     if (this.gamePlaylist.length > 1) this.setSpotifyEmbedUrl(this.gamePlaylist[this.track_n].track_url);
     else if (this.gamePlaylist.length == 1) this.setSpotifyEmbedUrl(this.gamePlaylist[0].track_url);
 
-    if (!this.startingModal && hasBeenActive() && this.gamePlaylist.length >= 1) this.sendSpotifyEmbedCommand({command: 'play_from_start'});
+    if (!this.startingModal && hasBeenActive() && this.gamePlaylist.length >= 1) this.playPlaybackFromStart();
   }
 
   gamePlaylist: GameTrack[] = [];
@@ -465,7 +460,7 @@ export class PlayComponent implements OnInit, OnDestroy, AfterViewChecked {
   nextGuess() {
     if (this.lastGuess) this.lastGuess.modalOpen = false;
 
-    this.sendSpotifyEmbedCommand({command: 'play_from_start'});
+    this.playPlaybackFromStart();
   }
 
   spotifyEmbedReady = false;
@@ -487,10 +482,16 @@ export class PlayComponent implements OnInit, OnDestroy, AfterViewChecked {
       return;
     }
     this.setSpotifyEmbedUrl(url);
-    this.sendSpotifyEmbedCommand({command: 'play_from_start'});
+    this.playPlaybackFromStart();
   }
 
-  revertPlayback() {
+  playPlaybackFromStart() {
+    this.spotifyPlaybackState = {
+      ...this.spotifyPlaybackState,
+      isPaused: true,
+      isBuffering: true,
+      position: 0,
+    };
     this.sendSpotifyEmbedCommand({command: 'play_from_start' });
   }
 

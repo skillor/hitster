@@ -1,10 +1,7 @@
 import { Routes } from '@angular/router';
-import { HomeComponent } from './pages/home/home.component';
-import { PlayComponent } from './pages/play/play.component';
 
 export const routes: Routes = [
-  { path: 'home', component: HomeComponent},
-  { path: 'play', component: PlayComponent},
-  { path: '', pathMatch: 'full', redirectTo: 'home' },
+  { path: 'home', loadComponent: () => import('./pages/home/home.component').then(mod => mod.HomeComponent) },
+  { path: 'play', loadComponent: () => import('./pages/play/play.component').then(mod => mod.PlayComponent) },
   { path: '**', redirectTo: 'home' },
 ];

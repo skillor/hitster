@@ -1,10 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, HostListener } from '@angular/core';
 import { SpotifyApiService } from '../../shared/spotify-api/spotify-api.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PlaylistLink, validatePlaylistLink } from '../../shared/playlist-link';
 import { Router } from '@angular/router';
 import { GameSettings } from '../../shared/game-settings';
+import { isMobile } from '../../shared/utils';
 
 @Component({
   selector: 'app-home',
@@ -29,6 +30,12 @@ export class HomeComponent {
   clipboardError = false;
 
   constructor(private router: Router, private spotifyApi: SpotifyApiService) { }
+
+  settings: GameSettings = {
+    keepWrongGuesses: true,
+    seed: '',
+    handleRemasters: 'fix',
+  };
 
   ngOnInit(): void {
     document.exitFullscreen().catch(() => {});
@@ -73,11 +80,6 @@ export class HomeComponent {
     this.hiddenInputString = this.selectString;
   }
 
-  settings: GameSettings = {
-    keepWrongGuesses: true,
-    seed: '',
-  };
-
   start() {
     const r = this.inputChange();
     if (!r) return;
@@ -96,6 +98,22 @@ export class HomeComponent {
     if (r.type == 'spotify-playlist' || r.type == 'json') {
       this.router.navigate(['play'])
       return;
+    }
+  }
+
+  isMobile = isMobile();
+  removeSpotifyEmbed = this.isMobile;
+  disableSpotifyLogin = true;
+
+  @HostListener('window:message', ['$event'])
+  messageEvent(event: MessageEvent) {
+    if (event.origin == 'https://open.spotify.com') {
+      if (event.data.type == 'ready') {
+        (<any>document.getElementById('spotify-embed')).contentWindow.postMessage({command: 'play_from_start'}, '*');
+      } else if (event.data.type == 'playback_update') {
+        if (event.data.payload.duration < 43300) this.disableSpotifyLogin = false;
+        this.removeSpotifyEmbed = true;
+      }
     }
   }
 }
