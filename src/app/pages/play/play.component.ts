@@ -526,7 +526,10 @@ export class PlayComponent implements OnInit, OnDestroy, AfterViewChecked {
         this.spotifyPlaybackState.isBuffering = false;
         this.replaySpotifyEmbedCommand = null;
       } else if (event.data.type == 'playback_update') {
-        this.spotifyPlaybackState = event.data.payload;
+        this.spotifyPlaybackState = {
+          ...event.data.payload,
+          isBuffering: this.spotifyPlaybackState.isBuffering && this.spotifyPlaybackState.position == event.data.payload.position
+        };
         if (!this.seekDragging) this.playbackSeekValue = this.spotifyPlaybackState.position;
         if (this.spotifyPlaybackState.position == this.spotifyPlaybackState.duration) this.spotifyPlaybackState.isPaused = true;
         if (!hasBeenActive()) this.spotifyPlaybackState.isPaused = true;
