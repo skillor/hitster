@@ -53,7 +53,7 @@ export class HomeComponent {
   settings: GameSettings = {
     keepWrongGuesses: true,
     seed: '',
-    handleRemasters: 'fix',
+    handleTimes: 'fix-tags',
   };
 
   ngOnInit(): void {

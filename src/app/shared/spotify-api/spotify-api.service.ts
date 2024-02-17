@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, map, of, switchMap } from 'rxjs';
+import { Observable, Subject, catchError, map, of, switchMap } from 'rxjs';
 import { SpotifyPlaylist, SpotifyTracks } from './spotify-playlist';
 import { Router } from '@angular/router';
 import { getMarket } from '../utils';
@@ -9,24 +9,32 @@ import { getMarket } from '../utils';
   providedIn: 'root'
 })
 export class SpotifyApiService {
+  authorizing: Subject<string> | null = null;
+
   constructor(private http: HttpClient, private router: Router) { }
 
   authorize(): Observable<string> {
     const token = localStorage.getItem('spotify_token');
     const expiration = localStorage.getItem('spotify_token_expires');
     if (token && expiration && !isNaN(+expiration) && +expiration > Date.now()) return of(token);
-    return this.http.get<{ accessToken: string, accessTokenExpirationTimestampMs: string }>('https://api.codetabs.com/v1/proxy/?quest=https://open.spotify.com/get_access_token').pipe(map((r) => {
-      localStorage.setItem('spotify_token', r.accessToken);
-      localStorage.setItem('spotify_token_expires', r.accessTokenExpirationTimestampMs);
-      return r.accessToken;
-    }));
+    if (this.authorizing) return this.authorizing;
+    this.authorizing = new Subject();
+    return this.http.get<{ accessToken: string, accessTokenExpirationTimestampMs: string }>('https://api.codetabs.com/v1/proxy/?quest=https://open.spotify.com/get_access_token').pipe(
+      map((r) => {
+        localStorage.setItem('spotify_token', r.accessToken);
+        localStorage.setItem('spotify_token_expires', r.accessTokenExpirationTimestampMs);
+        this.authorizing?.next(r.accessToken);
+        this.authorizing = null;
+        return r.accessToken;
+      }),
+    );
   }
 
-  searchTrack(track: string, artist: string, limit = 1, type = 'track'): Observable<SpotifyTracks> {
+  searchTrack(search: string, limit = 1, type = 'track'): Observable<SpotifyTracks> {
     return this.authorize().pipe(
       switchMap(() => this.http.get<{tracks: SpotifyTracks}>('https://api.spotify.com/v1/search', {
         params: {
-          q: `track:"${track}" artist:"${artist}"`,
+          q: search,
           limit: limit,
           type: 'track',
           market: getMarket(),

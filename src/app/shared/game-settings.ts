@@ -1,5 +1,5 @@
 export interface GameSettings {
   seed: string;
   keepWrongGuesses: boolean,
-  handleRemasters: 'remove' | 'fix' | 'keep',
+  handleTimes: 'remove-tags' | 'fix-tags' | 'fix-all' | 'keep-all',
 };

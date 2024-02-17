@@ -5,7 +5,7 @@ export interface SpotifyTrack {
     album_type: string,
     name: string,
     release_date: string,
-    release_date_precision: string,
+    release_date_precision: SpotifyReleaseDatePrecision,
     images: [{
       height: number,
       width: number,
@@ -13,7 +13,7 @@ export interface SpotifyTrack {
     }],
     // total_tracks: number,
   },
-  fixed_remaster?: boolean,
+  fixed_release_time?: boolean,
   is_playable: boolean,
   id: string,
   uri: string
@@ -25,6 +25,12 @@ export interface SpotifyTrack {
     },
   ],
 };
+
+export type SpotifyReleaseDatePrecision = "year" | "month" | "day";
+
+export function betterSpotifyReleaseDatePrecision(t1: SpotifyReleaseDatePrecision, t2: SpotifyReleaseDatePrecision) {
+  return ['day', 'month', 'year'].indexOf(t1) < ['day', 'month', 'year'].indexOf(t2);
+}
 
 export interface SpotifyPagination {
   offset: number,

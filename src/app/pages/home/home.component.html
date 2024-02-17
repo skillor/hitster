@@ -53,10 +53,14 @@
               <span class="label-text">Keep wrong guesses</span>
               <input type="checkbox" checked="checked" class="checkbox" [(ngModel)]="settings.keepWrongGuesses" [ngModelOptions]="{standalone: true}" />
             </label>
-            <select class="select select-bordered select-sm text-sm w-full my-2" [(ngModel)]="settings.handleRemasters" [ngModelOptions]="{standalone: true}">
-              <option value="fix">Fix Remasters</option>
-              <option value="keep">Keep Remasters</option>
-              <option value="remove">Remove Remasters</option>
+            <select class="select select-bordered select-sm text-sm w-full my-2" [(ngModel)]="settings.handleTimes" [ngModelOptions]="{standalone: true}">
+              <!--
+                'remove-tags' | 'fix-tags' | 'fix-all' | 'keep-all'
+              -->
+              <option value="fix-all">Fix Everything</option>
+              <option value="keep-all">Keep Everything</option>
+              <option value="fix-tags">Fix tags like Remastered</option>
+              <option value="remove-tags">Remove tags like Remastered</option>
             </select>
           </div>
         </details>
