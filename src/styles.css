@@ -9,6 +9,7 @@
 body {
   overscroll-behavior-y: none;
   overflow-y: scroll;
+  scroll-behavior: smooth;
 }
 
 ::-webkit-scrollbar {

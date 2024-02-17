@@ -1,16 +1,16 @@
 import { Component, HostListener } from '@angular/core';
-import { SpotifyApiService } from '../../shared/spotify-api/spotify-api.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PlaylistLink, validatePlaylistLink } from '../../shared/playlist-link';
 import { Router } from '@angular/router';
 import { GameSettings } from '../../shared/game-settings';
-import { isMobile } from '../../shared/utils';
+import { hasMobileUserAgent, isMobile } from '../../shared/utils';
+import { StartingModalComponent } from '../../components/starting-modal/starting-modal.component';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, StartingModalComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css'
 })
@@ -26,10 +26,29 @@ export class HomeComponent {
     'Perfect Playlist': 'assets/playlists/perfect.json',
   };
 
-  loading = false;
   clipboardError = false;
+  startingModal = true;
+  skippingResize = false;
 
-  constructor(private router: Router, private spotifyApi: SpotifyApiService) { }
+  requestFullscreen() {
+    (<any>document.body.style).zoom = '';
+    document.documentElement.requestFullscreen({ navigationUI: "hide" }).then(() => setTimeout(() => this.skippingResize = false, 200));
+    this.skippingResize = true;
+  }
+
+  clickFirstStart() {
+    if (isMobile()) this.requestFullscreen();
+    this.startingModal = false;
+  }
+
+  @HostListener('window:resize', ['$event'])
+  resizeEvent(event: MessageEvent) {
+    if (this.startingModal) return;
+    if (this.skippingResize) return;
+    if (isMobile()) this.startingModal = true;
+  }
+
+  constructor(private router: Router) { }
 
   settings: GameSettings = {
     keepWrongGuesses: true,
@@ -38,7 +57,9 @@ export class HomeComponent {
   };
 
   ngOnInit(): void {
-    document.exitFullscreen().catch(() => {});
+    if (!isMobile() || document.fullscreenElement) {
+      this.startingModal = false;
+    }
 
     const t = localStorage.getItem('game_settings');
     if (t) this.settings = {...this.settings, ...JSON.parse(t)};
@@ -87,8 +108,6 @@ export class HomeComponent {
   }
 
   startGame(r: PlaylistLink) {
-    this.loading = true;
-
     localStorage.removeItem('cached_playlist');
 
     localStorage.setItem('game_settings', JSON.stringify(this.settings));
@@ -101,8 +120,8 @@ export class HomeComponent {
     }
   }
 
-  isMobile = isMobile();
-  removeSpotifyEmbed = this.isMobile;
+  hasMobileUserAgent = hasMobileUserAgent();
+  removeSpotifyEmbed = hasMobileUserAgent();
   disableSpotifyLogin = true;
 
   @HostListener('window:message', ['$event'])
@@ -111,6 +130,7 @@ export class HomeComponent {
       if (event.data.type == 'ready') {
         (<any>document.getElementById('spotify-embed')).contentWindow.postMessage({command: 'play_from_start'}, '*');
       } else if (event.data.type == 'playback_update') {
+        if (event.data.payload.duration == 0) return;
         if (event.data.payload.duration < 43300) this.disableSpotifyLogin = false;
         this.removeSpotifyEmbed = true;
       }

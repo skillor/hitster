@@ -195,18 +195,8 @@
     <span class="loading loading-spinner loading-lg"></span>
   </div>
 </ng-template>
-<dialog class="modal modal-open" *ngIf="startingModal">
-  <div class="modal-box flex flex-col justify-center items-center text-center gap-4">
-    <h3 class="text-2xl">Welcome to your game of Hitster!</h3>
-    <button class="btn w-full" [ngClass]="{'btn-primary btn-lg': !loading}">
-      <span *ngIf="loading" class="loading loading-spinner"></span>
-      <span *ngIf="!loading" class="text-xl font-bold">Start</span>
-    </button>
-  </div>
-  <div method="dialog" class="modal-backdrop" style="z-index: 3000;">
-    <button (click)="clickFirstStart()">close</button>
-  </div>
-</dialog>
+<app-starting-modal *ngIf="startingModal" [loading]="loading" (close)="clickFirstStart()">
+</app-starting-modal>
 <dialog class="modal modal-open" *ngIf="menuModal">
   <div class="modal-box flex flex-col justify-center items-center text-center gap-4">
     <div class="flex flex-row w-full gap-2">

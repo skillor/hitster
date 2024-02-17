@@ -3,7 +3,7 @@ import {CdkDragDrop, CdkDropList, CdkDrag, moveItemInArray, transferArrayItem, C
 import { CommonModule, Location } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { SpotifyApiService } from '../../shared/spotify-api/spotify-api.service';
-import { Subscription, animationFrameScheduler, catchError, interval, switchMap } from 'rxjs';
+import { Subscription, animationFrameScheduler, catchError, interval } from 'rxjs';
 import { SpotifyPlaylist, SpotifyPlaylistWithLink } from '../../shared/spotify-api/spotify-playlist';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
@@ -14,7 +14,8 @@ import * as confetti from 'canvas-confetti';
 import { Howl } from 'howler';
 import Rand from 'rand-seed';
 import { PlaylistService } from '../../shared/playlist/playlist.service';
-import { isMobile } from '../../shared/utils';
+import { hasBeenActive, isMobile } from '../../shared/utils';
+import { StartingModalComponent } from '../../components/starting-modal/starting-modal.component';
 
 interface GameTrack {
   date: Date,
@@ -43,14 +44,10 @@ function shuffleArray(array: any[], rng: Rand) {
   }
 }
 
-function hasBeenActive(): boolean {
-  return navigator && navigator.userActivation && navigator.userActivation.hasBeenActive;
-}
-
 @Component({
   selector: 'app-play',
   standalone: true,
-  imports: [CdkDropList, CdkDrag, CommonModule, FormsModule, RouterModule],
+  imports: [CdkDropList, CdkDrag, CommonModule, FormsModule, RouterModule, StartingModalComponent],
   templateUrl: './play.component.html',
   styleUrl: './play.component.css'
 })
@@ -88,8 +85,6 @@ export class PlayComponent implements OnInit, OnDestroy, AfterViewChecked {
   menuModal = false;
   menuPlayedPrev = false;
 
-  isMobile = isMobile();
-
   requestFullscreen() {
     document.documentElement.requestFullscreen({ navigationUI: "hide" }).then(() => setTimeout(() => this.skippingResize = false, 200));
     this.skippingResize = true;
@@ -97,7 +92,7 @@ export class PlayComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   clickFirstStart() {
     if (this.loading) return;
-    if (this.isMobile) this.requestFullscreen();
+    if (isMobile()) this.requestFullscreen();
     this.startingModal = false;
     this.playPlaybackFromStart();
   }
@@ -111,7 +106,7 @@ export class PlayComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   closeMenu() {
-    if (this.isMobile) this.requestFullscreen();
+    if (isMobile()) this.requestFullscreen();
     this.menuModal = false;
     if (this.menuPlayedPrev) this.sendSpotifyEmbedCommand({command: 'resume'});
   }
@@ -146,7 +141,7 @@ export class PlayComponent implements OnInit, OnDestroy, AfterViewChecked {
   resizeEvent(event: MessageEvent) {
     if (this.startingModal) return;
     if (this.skippingResize) return;
-    if (this.isMobile) this.openMenu();
+    if (isMobile()) this.openMenu();
   }
 
   animationSubscription: Subscription | null = null;
@@ -202,7 +197,7 @@ export class PlayComponent implements OnInit, OnDestroy, AfterViewChecked {
 
     this.playlistLink = playlist;
 
-    if (hasBeenActive() && !this.isMobile) {
+    if (hasBeenActive() && (!isMobile() || document.fullscreenElement)) {
       this.startingModal = false;
     }
 
@@ -486,12 +481,6 @@ export class PlayComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   playPlaybackFromStart() {
-    this.spotifyPlaybackState = {
-      ...this.spotifyPlaybackState,
-      isPaused: true,
-      isBuffering: true,
-      position: 0,
-    };
     this.sendSpotifyEmbedCommand({command: 'play_from_start' });
   }
 
@@ -548,8 +537,16 @@ export class PlayComponent implements OnInit, OnDestroy, AfterViewChecked {
     }
   }
 
-  sendSpotifyEmbedCommand(cmd: any) {
+  sendSpotifyEmbedCommand(cmd: {command: 'play_from_start' | 'seek' | 'pause' | 'resume', [k: string]: any}) {
     if (cmd == null) return;
+    if (cmd.command == 'play_from_start') {
+      this.spotifyPlaybackState = {
+        ...this.spotifyPlaybackState,
+        isPaused: true,
+        isBuffering: true,
+        position: 0,
+      };
+    }
     if (!this.spotifyEmbedReady) {
       this.replaySpotifyEmbedCommand = cmd;
       return;
