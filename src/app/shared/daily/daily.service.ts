@@ -4,8 +4,7 @@ import { Observable, catchError, map, of, retry } from 'rxjs';
 import { generateSeed } from '../utils';
 import Rand from 'rand-seed';
 
-function getDayString(): string {
-  const d = new Date();
+function getDayString(d = new Date()): string {
   return `${d.getFullYear()}-${d.getUTCMonth()+1}-${d.getUTCDate()}`;
 }
 
@@ -42,20 +41,29 @@ export class DailyService {
     const dailyValue = this.getDailyValue();
     if (dailyValue) return of(generateSeed(undefined, new Rand(dailyValue)));
     localStorage.setItem('daily_played', '0');
-    // https://docs.kraken.com/rest/#tag/Market-Data/operation/getTickerInformation
+
     const pair = 'XBTUSD'; // https://docs.kraken.com/rest/#tag/Market-Data/operation/getTradableAssetPairs
-    type ResponseType = {result: {[k: string]: {o: string}}};
-    return this.http.get<ResponseType>(`https://api.kraken.com/0/public/Ticker?pair=${pair}`).pipe(
-      map(v => {
-        const price = Number(Object.values(v.result)[0].o);
-        const dailyValue = `${getDayString()} (${price})`;
+    type TickerResponseType = {result: {[k: string]: {o: string}}}; // https://docs.kraken.com/rest/#tag/Market-Data/operation/getTickerInformation
+    return this.http.get<TickerResponseType>(`https://api.kraken.com/0/public/Ticker?pair=${pair}`, {observe: 'response'}).pipe(
+      map((ticker) => {
+        if (!ticker.body) throw new Error(`no body from "${ticker.url}"`);
+        const lastModified = ticker.headers.get('last-modified');
+        if (!lastModified) throw new Error(`no last modified from "${ticker.url}"`);
+        const price = Number(Object.values(ticker.body.result)[0].o);
+        const date = new Date(lastModified);
+        if (isNaN(+date)) throw new Error(`invalid date ${date} from "${ticker.url}"`);
+        const dailyValue = `${getDayString(date)} (${price})`;
         const seed = generateSeed(undefined, new Rand(dailyValue));
         localStorage.setItem('daily_value', dailyValue);
         return seed;
       }),
+      catchError((err) => {
+        console.error(err);
+        throw err;
+      }),
       retry({ count: 3, delay: 2000 }),
-      catchError(() => {
-        console.error('could not get daily lucky number');
+      catchError((err) => {
+        console.error('could not get daily lucky number', err);
         return `${getDayString()} (error)`;
       }),
     );
