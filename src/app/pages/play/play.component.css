@@ -1,15 +1,17 @@
 @keyframes flame {
   0% {
-    transform: rotate(-7deg) scale(0.9);
-    filter: drop-shadow(0 0 0 crimson);
+    transform: rotateZ(-7deg) scale(0.9);
+    filter: drop-shadow(0 0 0.1rem var(--fc1));
   }
   100% {
-    transform: rotate(+7deg) scale(1);
-    filter: drop-shadow(0 0 0.5rem crimson);
+    transform: rotateZ(+7deg) scale(1);
+    filter: drop-shadow(0 0 0.3rem var(--fc2));
   }
 }
 
 .flicker-animation {
+  --fc1: #FF6723;
+  --fc2: #FFB02E;
   animation: flame linear infinite alternate;
   animation-duration: 0s;
   filter: grayscale(1);
