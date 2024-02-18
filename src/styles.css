@@ -29,8 +29,8 @@ body {
 }
 
 :root {
-  --bg-er-to-n: linear-gradient(30deg, oklch(var(--n)) 42%, oklch(var(--er)) 420%);
-  --bg-su-to-n: linear-gradient(30deg, oklch(var(--n)) 42%, oklch(var(--su)) 420%);
+  --bg-er-to-n: linear-gradient(30deg, oklch(var(--n)) 42%, oklch(var(--er)) 280%);
+  --bg-su-to-n: linear-gradient(30deg, oklch(var(--n)) 42%, oklch(var(--su)) 280%);
 }
 
 .btn-success.bg-blur, .btn-error.bg-blur {

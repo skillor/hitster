@@ -1,9 +1,4 @@
-.flicker-animation {
-  animation: spin linear infinite alternate;
-  animation-duration: 0s;
-}
-
-@keyframes spin {
+@keyframes flame {
   0% {
     transform: rotate(-7deg) scale(0.9);
     filter: drop-shadow(0 0 0 crimson);
@@ -12,6 +7,12 @@
     transform: rotate(+7deg) scale(1);
     filter: drop-shadow(0 0 0.5rem crimson);
   }
+}
+
+.flicker-animation {
+  animation: flame linear infinite alternate;
+  animation-duration: 0s;
+  filter: grayscale(1);
 }
 
 

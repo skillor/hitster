@@ -1,8 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, Subject, bufferCount, catchError, combineLatest, concatMap, from, map, of, reduce, switchMap } from 'rxjs';
+import { Observable, Subject, bufferCount, combineLatest, concatMap, from, map, of, reduce, retry, switchMap } from 'rxjs';
 import { SpotifyPlaylist, SpotifyTracks } from './spotify-playlist';
-import { Router } from '@angular/router';
 import { getMarket } from '../utils';
 
 @Injectable({
@@ -11,7 +10,7 @@ import { getMarket } from '../utils';
 export class SpotifyApiService {
   authorizing: Subject<string> | null = null;
 
-  constructor(private http: HttpClient, private router: Router) { }
+  constructor(private http: HttpClient) { }
 
   authorize(): Observable<string> {
     const token = localStorage.getItem('spotify_token');
@@ -21,12 +20,14 @@ export class SpotifyApiService {
     this.authorizing = new Subject();
     return this.http.get<{ accessToken: string, accessTokenExpirationTimestampMs: string }>('https://api.codetabs.com/v1/proxy/?quest=https://open.spotify.com/get_access_token').pipe(
       map((r) => {
+        if (!r.accessToken) throw new Error('no access token');
         localStorage.setItem('spotify_token', r.accessToken);
         localStorage.setItem('spotify_token_expires', r.accessTokenExpirationTimestampMs);
         this.authorizing?.next(r.accessToken);
         this.authorizing = null;
         return r.accessToken;
       }),
+      retry({ count: 3, delay: 2000 }),
     );
   }
 
