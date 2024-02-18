@@ -81,7 +81,8 @@ export class PlayComponent implements OnInit, OnDestroy, AfterViewChecked {
   menuPlayedPrev = false;
 
   requestFullscreen() {
-    document.documentElement.requestFullscreen({ navigationUI: "hide" }).then(() => setTimeout(() => this.skippingResize = false, 200));
+    document.documentElement.requestFullscreen({ navigationUI: 'hide' }).then(() => setTimeout(() => this.skippingResize = false, 200));
+    if (isMobile() && screen.orientation && (<any>screen.orientation).lock)  (<any>screen.orientation).lock('portrait');
     this.skippingResize = true;
   }
 

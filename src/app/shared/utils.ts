@@ -66,7 +66,7 @@ export function isScreenPortrait(): boolean {
 }
 
 export function isMobile(): boolean {
-  return hasMobileUserAgent() || (isEmulationDesktop() && isScreenPortrait());
+  return hasMobileUserAgent() || isEmulationDesktop();
 }
 
 export function hasMobileUserAgent(): boolean {
