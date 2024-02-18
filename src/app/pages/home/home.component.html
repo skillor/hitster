@@ -36,7 +36,7 @@
       </div>
 
       <div class="form-control mt-6">
-        <button class="btn btn-primary btn-lg font-bold text-2xl" [disabled]="!validateInput()" (click)="start()">
+        <button class="btn btn-primary btn-lg font-bold text-2xl flex-nowrap" [disabled]="!validateInput()" (click)="start()">
           Start
           <svg class="w-8 h-8" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
             <path fill-rule="evenodd"
@@ -46,8 +46,8 @@
         </button>
       </div>
 
-      <div class="form-control mt-2" *ngIf="!hasMobileUserAgent">
-        <a class="btn btn-neutral text-lg" [class.btn-disabled]="disableSpotifyLogin" href="https://spotify.com/login"
+      <div class="form-control mt-2 tooltip before:text-base" [attr.data-tip]="disableSpotifyLogin ?  'You are logged in' : 'To hear full songs you have to be logged into Spotify'" *ngIf="!hasMobileUserAgent">
+        <a class="btn btn-neutral text-lg w-full" [class.btn-disabled]="disableSpotifyLogin" href="https://spotify.com/login"
           target="_blank">
           Login
           <svg fill="currentColor" width="24" height="24" xmlns="http://www.w3.org/2000/svg" fill-rule="evenodd"
