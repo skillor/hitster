@@ -1,7 +1,7 @@
 import { Component, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { PlaylistLink, validatePlaylistLink } from '../../shared/playlist-link';
+import { PlaylistLink, validatePlaylistLink } from '../../shared/playlist/playlist-link';
 import { Router } from '@angular/router';
 import { GameSettings } from '../../shared/game-settings';
 import { hasMobileUserAgent, isMobile } from '../../shared/utils';
@@ -22,8 +22,9 @@ export class HomeComponent {
   playlists = {
     'Classic': 'assets/playlists/classic-english.json',
     'Classic (Deutsch)': 'assets/playlists/classic-deutsch.json',
-    'Wild Mix': 'assets/playlists/wild-mix.json',
+    'Massive': 'assets/playlists/massive.json',
     'Perfect Playlist': 'assets/playlists/perfect.json',
+    'Wild Mix': 'assets/playlists/wild-mix.json',
   };
 
   clipboardError = false;
@@ -54,7 +55,15 @@ export class HomeComponent {
     keepWrongGuesses: true,
     seed: '',
     handleTimes: 'fix-tags',
+    limit: 0,
   };
+  gameSettingsLimit = '';
+
+  validateGameSettingsLimit(): number | null {
+    const n = +this.gameSettingsLimit;
+    if (isNaN(n) || n < 0) return null;
+    return n;
+  }
 
   ngOnInit(): void {
     if (!isMobile() || document.fullscreenElement) {
@@ -102,7 +111,7 @@ export class HomeComponent {
   }
 
   start() {
-    const r = this.inputChange();
+    const r = this.validateInput();
     if (!r) return;
     this.startGame(r);
   }
@@ -110,14 +119,14 @@ export class HomeComponent {
   startGame(r: PlaylistLink) {
     localStorage.removeItem('cached_playlist');
 
+    const limit = this.validateGameSettingsLimit();
+    if (limit !== null) this.settings.limit = limit;
+
     localStorage.setItem('game_settings', JSON.stringify(this.settings));
 
     localStorage.setItem('playlist_link', r.raw);
 
-    if (r.type == 'spotify-playlist' || r.type == 'json') {
-      this.router.navigate(['play'])
-      return;
-    }
+    this.router.navigate(['play'])
   }
 
   hasMobileUserAgent = hasMobileUserAgent();

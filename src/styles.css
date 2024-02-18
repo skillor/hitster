@@ -28,40 +28,57 @@ body {
   padding-bottom: env(safe-area-inset-bottom);
 }
 
+:root {
+  --bg-er-to-n: linear-gradient(30deg, oklch(var(--n)) 42%, oklch(var(--er)) 470%);
+  --bg-su-to-n: linear-gradient(30deg, oklch(var(--n)) 42%, oklch(var(--su)) 470%);
+}
+
+.btn-success.bg-blur, .btn-error.bg-blur {
+  background-color: oklch(var(--btn-color) / .3);
+  border-color: oklch(var(--btn-color) / .1);
+  outline-color: oklch(var(--btn-color) / .3);
+}
+
+.btn-success.bg-blur:hover, .btn-error.bg-blur:hover {
+  background-color: oklch(var(--btn-color) / .2);
+}
+
+.bg-success-to-neutral {
+  background-image: var(--bg-su-to-n);
+}
+
+.bg-error-to-neutral {
+  background-image: var(--bg-er-to-n);
+}
+
 .animate-bg-success-to-neutral {
-  animation: bg-success-to-neutral 1.5s;
+  animation: bg-success-to-neutral 1.0s;
 }
 
 .animate-bg-error-to-neutral {
-  animation: bg-error-to-neutral 1.5s;
+  animation: bg-error-to-neutral 1.0s;
 }
 
 @keyframes bg-success-to-neutral {
   0% {
-    background-color: oklch(var(--n));
-    color: oklch(var(--nc));
+    background: oklch(var(--n));
   }
   20% {
-    background-color: oklch(var(--su));
-    color: oklch(var(--suc));
+    background: oklch(var(--su));
   }
   100% {
-    background-color: oklch(var(--n));
-    color: oklch(var(--nc));
+    background: var(--bg-su-to-n);
   }
 }
 
 @keyframes bg-error-to-neutral {
   0% {
-    background-color: oklch(var(--n));
-    color: oklch(var(--nc));
+    background: oklch(var(--n));
   }
   20% {
-    background-color: oklch(var(--er));
-    color: oklch(var(--erc));
+    background: oklch(var(--er));
   }
   100% {
-    background-color: oklch(var(--n));
-    color: oklch(var(--nc));
+    background: var(--bg-er-to-n);
   }
 }

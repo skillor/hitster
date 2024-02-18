@@ -7,8 +7,7 @@ import { Subscription, animationFrameScheduler, catchError, interval } from 'rxj
 import { SpotifyPlaylist, SpotifyPlaylistWithLink } from '../../shared/spotify-api/spotify-playlist';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
-import { PlaylistLink, validatePlaylistLink } from '../../shared/playlist-link';
-import { HttpClient } from '@angular/common/http';
+import { PlaylistLink, validatePlaylistLink } from '../../shared/playlist/playlist-link';
 import { GameSettings } from '../../shared/game-settings';
 import * as confetti from 'canvas-confetti';
 import { Howl } from 'howler';
@@ -59,14 +58,16 @@ export class PlayComponent implements OnInit, OnDestroy, AfterViewChecked {
     keepWrongGuesses: false,
     seed: '',
     handleTimes: 'fix-tags',
+    limit: 0,
   };
+
+  hadQuerySeed = false;
 
   firstDate = new Date('0000');
   lastDate = new Date();
 
   constructor(
     private router: Router,
-    private http: HttpClient,
     private spotifyApi: SpotifyApiService,
     private playlistService: PlaylistService,
     private sanitizer: DomSanitizer,
@@ -111,6 +112,15 @@ export class PlayComponent implements OnInit, OnDestroy, AfterViewChecked {
     if (this.menuPlayedPrev) this.sendSpotifyEmbedCommand({command: 'resume'});
   }
 
+  endModal = false;
+  openEndModal() {
+    this.endModal = true;
+  }
+
+  closeEndModal() {
+    this.endModal = false;
+  }
+
   shareGame() {
     const el = document.createElement('input');
     el.value = window.location.href;
@@ -133,7 +143,7 @@ export class PlayComponent implements OnInit, OnDestroy, AfterViewChecked {
       return;
     }
     this.menuModal = false;
-    this.gameSettings.seed = generateSeed();
+    if (!this.hadQuerySeed) this.gameSettings.seed = generateSeed();
     this.startGame(this.activePlaylist);
   }
 
@@ -185,7 +195,9 @@ export class PlayComponent implements OnInit, OnDestroy, AfterViewChecked {
 
     const queryGameSettings = this.route.snapshot.queryParamMap.get('s');
     if (queryGameSettings) try {
-      this.gameSettings = {...this.gameSettings, ...JSON.parse(queryGameSettings)};
+      const queryGameSettingsParsed = JSON.parse(queryGameSettings);
+      if (queryGameSettingsParsed.seed) this.hadQuerySeed = true;
+      this.gameSettings = {...this.gameSettings, ...queryGameSettingsParsed};
     } catch {}
 
     if (!this.gameSettings.seed) this.gameSettings.seed = generateSeed();
@@ -208,27 +220,16 @@ export class PlayComponent implements OnInit, OnDestroy, AfterViewChecked {
       if (cached && cached.link == playlist.raw) return this.startGame(cached);
     }
 
-    if (playlist.type == 'spotify-playlist') {
-      this.spotifyApi.playlist(this.playlistLink.payload).pipe(catchError((err) => {
-          this.router.navigate(['home']);
-          throw err;
-      })).subscribe((res) => {
-        this.firstStartGame(res);
-      });
-      return;
-    }
-
-    if (playlist.type == 'json') {
-      this.http.get<SpotifyPlaylist>(playlist.payload).pipe(catchError((err) => {
+    this.playlistService.get(playlist).pipe(catchError((err) => {
+      this.router.navigate(['home']);
+      throw err;
+    })).subscribe((res) => {
+      if (!res) {
         this.router.navigate(['home']);
-        throw err;
-      })).subscribe((res) => {
-        this.firstStartGame(res);
-      });
-      return;
-    }
-
-    this.router.navigate(['home']);
+        return;
+      }
+      this.firstStartGame(res);
+    });
   }
 
   firstStartGame(playlist: SpotifyPlaylist) {
@@ -299,6 +300,8 @@ export class PlayComponent implements OnInit, OnDestroy, AfterViewChecked {
 
     shuffleArray(this.gamePlaylist, new Rand(this.gameSettings.seed));
 
+    if (this.gameSettings.limit > 0) this.gamePlaylist = this.gamePlaylist.slice(0, this.gameSettings.limit);
+
     this.guessedTracks = this.gamePlaylist.slice(0, 1);
     // this.guessedTracks = this.gamePlaylist.sort((a, b) => a.date < b.date ? -1 : +1).slice(0, 15);
 
@@ -321,7 +324,7 @@ export class PlayComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   guessedTracks: GameTrack[] = [];
 
-  track_n = 1;
+  track_n = 0;
 
   tracks = [0];
 
@@ -400,9 +403,11 @@ export class PlayComponent implements OnInit, OnDestroy, AfterViewChecked {
       this.totalStats.streak += 1;
     } else {
       this.totalStats.guessedWrong += 1;
-      this.totalStats.highestStreak = Math.max(this.totalStats.highestStreak, this.totalStats.streak);
       this.totalStats.streak = 0;
     }
+
+    this.totalStats.highestStreak = Math.max(this.totalStats.highestStreak, this.totalStats.streak);
+
     if (slotDiff < 0) this.totalStats.guessedEarly += 1;
     if (slotDiff > 0) this.totalStats.guessedLate += 1;
     this.totalStats.totalDateOff += Math.abs(dateDiff);
@@ -422,7 +427,7 @@ export class PlayComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.track_n += 1;
     this.newd = [-1];
 
-    this.setSpotifyEmbedUrl(this.gamePlaylist[this.track_n].track_url);
+    if (this.track_n < this.gamePlaylist.length) this.setSpotifyEmbedUrl(this.gamePlaylist[this.track_n].track_url);
 
     if (slotDiff == 0) {
       this.nextGuess();
@@ -458,7 +463,7 @@ export class PlayComponent implements OnInit, OnDestroy, AfterViewChecked {
   nextGuess() {
     if (this.lastGuess) this.lastGuess.modalOpen = false;
 
-    this.playPlaybackFromStart();
+    if (this.track_n < this.gamePlaylist.length) this.playPlaybackFromStart();
   }
 
   spotifyEmbedReady = false;

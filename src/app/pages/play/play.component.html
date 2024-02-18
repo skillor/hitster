@@ -11,23 +11,22 @@
           <div class="flex flex-row items-center justify-center gap-1">
             {{totalStats.streak}}
             <svg class="flicker-animation w-8 h-8" [ngStyle]="{'animation-duration': totalStats.streak ? '' + 1 / totalStats.streak + 's' : '0s'}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
-              <path d="M26 19.3399C26 25.4393 20.9491 30.3451 14.8501 29.981C8.58145 29.6067 4.2892 23.5781 5.09774 17.2765C5.58685 13.4429 7.38361 10.1555 9.34008 7.6065C9.67947 7.16144 10.0288 10.7422 10.3782 10.3477C10.7276 9.94307 13.9717 4.32923 15.0997 2.35679C15.3093 1.99265 15.7884 1.88139 16.1278 2.14438C18.3937 3.85382 26 10.2769 26 19.3399Z" fill="#FF6723"/>
-              <path d="M23 21.8512C23 25.893 19.4812 29.142 15.2011 28.9952C10.5815 28.8386 7.41254 24.6109 8.09159 20.256C9.06903 14.0124 15.4789 10 15.4789 10C15.4789 10 23 14.7072 23 21.8512Z" fill="#FFB02E"/>
+              <path fill="#FF6723" d="M26 19.3399C26 25.4393 20.9491 30.3451 14.8501 29.981C8.58145 29.6067 4.2892 23.5781 5.09774 17.2765C5.58685 13.4429 7.38361 10.1555 9.34008 7.6065C9.67947 7.16144 10.0288 10.7422 10.3782 10.3477C10.7276 9.94307 13.9717 4.32923 15.0997 2.35679C15.3093 1.99265 15.7884 1.88139 16.1278 2.14438C18.3937 3.85382 26 10.2769 26 19.3399Z"/>
+              <path fill="#FFB02E" d="M23 21.8512C23 25.893 19.4812 29.142 15.2011 28.9952C10.5815 28.8386 7.41254 24.6109 8.09159 20.256C9.06903 14.0124 15.4789 10 15.4789 10C15.4789 10 23 14.7072 23 21.8512Z" />
             </svg>
           </div>
         </div>
         <div class="flex flex-row items-center text-3xl font-bold gap-2">
           <div class="flex flex-row items-center justify-center gap-1">
             {{totalStats.guessedRight}}
-            <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
-              <path d="M2 6C2 3.79086 3.79086 2 6 2H26C28.2091 2 30 3.79086 30 6V26C30 28.2091 28.2091 30 26 30H6C3.79086 30 2 28.2091 2 26V6Z" fill="#00D26A"/>
-              <path d="M13.242 23C12.8588 23 12.4757 22.8566 12.183 22.5692L6.43855 16.9278C5.85382 16.3535 5.85382 15.422 6.43855 14.8477C7.02329 14.2735 7.97186 14.2735 8.55659 14.8477L13.242 19.4491L23.4434 9.43069C24.0281 8.85644 24.9767 8.85644 25.5614 9.43069C26.1462 10.0049 26.1462 10.9365 25.5614 11.5107L14.301 22.5692C14.009 22.8566 13.6252 23 13.242 23Z" fill="#F4F4F4"/>
+            <svg class="w-9 h-9 text-success" stroke-width="3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
             </svg>
           </div>
           <div class="flex flex-row items-center justify-center gap-1">
             {{totalStats.guessedWrong}}
-            <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
-              <path d="M24.8787 2.87868C26.0503 1.70711 27.9497 1.70711 29.1213 2.87868C30.2929 4.05025 30.2929 5.94975 29.1213 7.12132L20.331 15.9116C20.2822 15.9604 20.2822 16.0396 20.331 16.0884L29.1213 24.8787C30.2929 26.0503 30.2929 27.9497 29.1213 29.1213C27.9497 30.2929 26.0503 30.2929 24.8787 29.1213L16.0884 20.331C16.0396 20.2822 15.9604 20.2822 15.9116 20.331L7.12132 29.1213C5.94975 30.2929 4.05025 30.2929 2.87868 29.1213C1.70711 27.9497 1.70711 26.0503 2.87868 24.8787L11.669 16.0884C11.7178 16.0396 11.7178 15.9604 11.669 15.9116L2.87868 7.12132C1.70711 5.94975 1.70711 4.05025 2.87868 2.87868C4.05025 1.70711 5.94975 1.70711 7.12132 2.87868L15.9116 11.669C15.9604 11.7178 16.0396 11.7178 16.0884 11.669L24.8787 2.87868Z" fill="#F92F60"/>
+            <svg class="w-10 h-10 text-error" stroke-width="3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
             </svg>
           </div>
         </div>
@@ -55,7 +54,10 @@
       </ng-container>
 
       <ng-container *ngIf="number != -1">
-        <div [attr.id]="'drag-list-id-' + guessedTracks[number].id" class="drag-list-item rounded-lg bg-neutral text-neutral-content shadow-xl p-4 w-[20rem] md:w-[30rem] gap-3" [ngClass]="lastGuess && !lastGuess.hideAnimation && !lastGuess.modalOpen && lastGuess.id == guessedTracks[number].id ? (lastGuess.correct ? 'animate-bg-success-to-neutral' : 'animate-bg-error-to-neutral') : ''" cdkDrag cdkDragDisabled>
+        <div [attr.id]="'drag-list-id-' + guessedTracks[number].id"
+        [class.bg-error-to-neutral]="!guessedTracks[number].guessed_correct"
+        [class.bg-success-to-neutral]="guessedTracks[number].guessed_correct && guessedTracks[number].id != gamePlaylist[0].id"
+        class="drag-list-item rounded-lg bg-neutral text-neutral-content shadow-xl p-4 w-[20rem] md:w-[30rem] gap-3" [ngClass]="lastGuess && !lastGuess.hideAnimation && !lastGuess.modalOpen && lastGuess.id == guessedTracks[number].id ? (lastGuess.correct ? 'animate-bg-success-to-neutral' : 'animate-bg-error-to-neutral') : ''" cdkDrag cdkDragDisabled>
           <div class="flex flex-row items-center gap-3">
             <a class="btn rounded-none border-0 p-0 w-20 md:w-24 h-20 md:h-24 overflow-visible animate-none" draggable="false" [href]="'https://open.spotify.com/track/' + guessedTracks[number].id" target="_blank">
               <img class="w-full h-full" draggable="false" [src]="guessedTracks[number].album_image_url">
@@ -67,9 +69,9 @@
           </div>
           <div class="flex flex-col items-center gap-2">
             <div class="font-bold text-3xl">{{guessedTracks[number].date.getFullYear()}}</div>
-            <button class="btn btn-circle"
-            [class.text-error]="!guessedTracks[number].guessed_correct"
-            [class.text-success]="guessedTracks[number].guessed_correct && guessedTracks[number].id != gamePlaylist[0].id"
+            <button class="btn btn-circle bg-blur"
+            [class.btn-error]="!guessedTracks[number].guessed_correct"
+            [class.btn-success]="guessedTracks[number].guessed_correct && guessedTracks[number].id != gamePlaylist[0].id"
             (click)="toggleOtherSong(guessedTracks[number].track_url)">
               <div [ngClass]="{'loading loading-spinner': spotifyPlaybackState.isBuffering && guessedTracks[number].track_url == spotifyEmbedUrl}">
                 <svg *ngIf="guessedTracks[number].track_url != spotifyEmbedUrl || spotifyPlaybackState.isPaused" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-6 h-6">
@@ -122,7 +124,7 @@
               <span class="drag-live-hack text-nowrap">{{yearText}}</span>
             </div>
             <button class="join-item btn btn-circle btn-success btn-lg" (click)="guess()">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3.5" stroke="currentColor" class="w-6 h-6">
+              <svg class="w-7 h-7 md:w-8 md:h-8" stroke-width="3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
               </svg>
             </button>
@@ -130,7 +132,9 @@
         </div>
       </ng-container>
       <ng-template #ending>
-        <div>The End</div>
+        <button class="btn btn-primary btn-lg text-primary-content text-2xl md:text-3xl" (click)="openEndModal()">
+          Stats
+        </button>
       </ng-template>
 
       <div class="flex flex-row gap-2 items-center w-[20rem] md:w-[30rem]">
@@ -142,7 +146,7 @@
           </button>
 
           <button class="btn btn-secondary btn-circle" (click)="togglePlayback()">
-            <div [ngClass]="{'loading loading-spinner': spotifyPlaybackState.isBuffering}">
+            <div [ngClass]="{'loading loading-spinner': spotifyPlaybackState.isBuffering && track_n > 0}">
               <svg *ngIf="spotifyPlaybackState.isPaused" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-6 h-6">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" />
               </svg>
@@ -197,6 +201,36 @@
 </ng-template>
 <app-starting-modal *ngIf="startingModal" [loading]="loading" (close)="clickFirstStart()">
 </app-starting-modal>
+
+<dialog class="modal" [class.modal-open]="endModal">
+  <div class="modal-box">
+    <div class="stat">
+      <div class="stat-title">Highest Streak</div>
+      <div class="stat-value flex flex-row items-center gap-1">
+        {{totalStats.highestStreak}}
+        <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+          <path d="M26 19.3399C26 25.4393 20.9491 30.3451 14.8501 29.981C8.58145 29.6067 4.2892 23.5781 5.09774 17.2765C5.58685 13.4429 7.38361 10.1555 9.34008 7.6065C9.67947 7.16144 10.0288 10.7422 10.3782 10.3477C10.7276 9.94307 13.9717 4.32923 15.0997 2.35679C15.3093 1.99265 15.7884 1.88139 16.1278 2.14438C18.3937 3.85382 26 10.2769 26 19.3399Z" fill="#FF6723"/>
+          <path d="M23 21.8512C23 25.893 19.4812 29.142 15.2011 28.9952C10.5815 28.8386 7.41254 24.6109 8.09159 20.256C9.06903 14.0124 15.4789 10 15.4789 10C15.4789 10 23 14.7072 23 21.8512Z" fill="#FFB02E"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="stat">
+      <div class="stat-title">Guessed Right</div>
+      <div class="stat-value">{{totalStats.guessedRight + totalStats.guessedWrong > 0 ? totalStats.guessedRight * 100 / (totalStats.guessedRight + totalStats.guessedWrong) : 0}} %</div>
+      <div class="stat-desc">of {{totalStats.guessedRight + totalStats.guessedWrong}} Songs</div>
+    </div>
+
+    <a class="btn btn-neutral w-full btn-lg text-xl font-bold" routerLink="/home">
+      New Game
+    </a>
+  </div>
+  <div method="dialog" class="modal-backdrop">
+    <button (click)="closeEndModal()">close</button>
+  </div>
+</dialog>
+
+
 <dialog class="modal modal-open" *ngIf="menuModal">
   <div class="modal-box flex flex-col justify-center items-center text-center gap-4">
     <div class="flex flex-row w-full gap-2">

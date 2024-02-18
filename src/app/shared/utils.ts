@@ -39,6 +39,17 @@ export function stringSimilarity(s1: string, s2: string): number {
   return (longerLength - stringEditDistance(longer, shorter)) / longerLength;
 }
 
+export function stringSimilarityCropStart(s1: string, s2: string): number {
+  let longer = s1;
+  let shorter = s2;
+  if (s1.length < s2.length) {
+    longer = s2;
+    shorter = s1;
+  }
+  longer = longer.substring(0, shorter.length);
+  return stringSimilarity(longer, shorter);
+}
+
 export function isEmulationDesktop(): boolean {
   return window.innerWidth > screen.availWidth;
 }
