@@ -3,9 +3,10 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PlaylistLink, validatePlaylistLink } from '../../shared/playlist/playlist-link';
 import { Router } from '@angular/router';
-import { GameSettings } from '../../shared/game-settings';
+import { GameSettings, HandleTimesType } from '../../shared/game-settings';
 import { hasMobileUserAgent, isMobile } from '../../shared/utils';
 import { StartingModalComponent } from '../../components/starting-modal/starting-modal.component';
+import { DailyService } from '../../shared/daily/daily.service';
 
 @Component({
   selector: 'app-home',
@@ -16,16 +17,16 @@ import { StartingModalComponent } from '../../components/starting-modal/starting
 })
 export class HomeComponent {
   hasClipboard = navigator.clipboard && navigator.clipboard.readText;
+  loading = true;
 
-  hiddenInputString = 'assets/playlists/classic-english.json';
-
-  playlists = {
-    'Classic': 'assets/playlists/classic-english.json',
-    'Classic (Deutsch)': 'assets/playlists/classic-deutsch.json',
-    'Massive': 'assets/playlists/massive.json',
-    'Perfect Playlist': 'assets/playlists/perfect.json',
-    'Wild Mix': 'assets/playlists/wild-mix.json',
-  };
+  playlists = [
+    {title: 'Daily Challenge', link: 'assets/playlists/massive.json', onStart: this.daily.startedDaily, settings: {limit: 8, seed: '', keepWrongGuesses: true, handleTimes: <HandleTimesType>'keep-all'}},
+    {title: 'Classic', link: 'assets/playlists/classic-english.json'},
+    {title: 'Classic (Deutsch)', link: 'assets/playlists/classic-deutsch.json'},
+    {title: 'Perfect Playlist', link: 'assets/playlists/perfect.json'},
+    {title: 'Wild Mix', link: 'assets/playlists/wild-mix.json'},
+    {title: 'Massive', link: 'assets/playlists/massive.json'},
+  ];
 
   clipboardError = false;
   startingModal = true;
@@ -49,7 +50,10 @@ export class HomeComponent {
     if (isMobile()) this.startingModal = true;
   }
 
-  constructor(private router: Router) { }
+  constructor(
+    private router: Router,
+    private daily: DailyService,
+  ) { }
 
   settings: GameSettings = {
     keepWrongGuesses: true,
@@ -70,11 +74,19 @@ export class HomeComponent {
       this.startingModal = false;
     }
 
+    this.daily.getDailySeed().subscribe((v) => {
+      if (this.playlists[0].settings) this.playlists[0].settings.seed = v;
+      this.loading = false;
+    });
+
+    if (this.daily.hasPlayedToday() && this.playlists.length > 1) {
+      this.defaultSelectedPlaylist = 1;
+      this.selectedPlaylist = 1;
+    }
+
     const t = localStorage.getItem('game_settings');
     if (t) this.settings = {...this.settings, ...JSON.parse(t)};
     this.settings.seed = '';
-
-    this.selectString = this.hiddenInputString;
 
     this.validateInput();
   }
@@ -92,22 +104,22 @@ export class HomeComponent {
 
   validateInput(): PlaylistLink | null {
     let t = this.inputString;
-    if (t == '') t = this.hiddenInputString;
-
+    if (!t) t = this.playlists[this.selectedPlaylist].link;
+    if (!t) t = this.playlists[this.defaultSelectedPlaylist].link;
     return validatePlaylistLink(t);
   }
 
-  inputString = '';
+  inputString: string = '';
   inputChange(): PlaylistLink | null {
-    this.selectString = '';
+    this.selectedPlaylist = this.defaultSelectedPlaylist;
 
     return this.validateInput();
   }
 
-  selectString = '';
+  defaultSelectedPlaylist = 0;
+  selectedPlaylist = 0;
   selectChange() {
     this.inputString = '';
-    this.hiddenInputString = this.selectString;
   }
 
   start() {
@@ -119,14 +131,25 @@ export class HomeComponent {
   startGame(r: PlaylistLink) {
     localStorage.removeItem('cached_playlist');
 
-    const limit = this.validateGameSettingsLimit();
-    if (limit !== null) this.settings.limit = limit;
-
     localStorage.setItem('game_settings', JSON.stringify(this.settings));
 
-    localStorage.setItem('playlist_link', r.raw);
-
-    this.router.navigate(['play'])
+    const limit = this.validateGameSettingsLimit();
+    if (limit !== null) this.settings.limit = limit;
+    if (!this.inputString) {
+      const playlist = this.playlists[this.selectedPlaylist];
+      this.settings = {...this.settings, ...playlist.settings};
+      if (playlist.onStart) playlist.onStart();
+    }
+    this.router.navigate(
+      ['play'],
+      {
+        queryParams: {
+          p: r.raw,
+          s: JSON.stringify(this.settings),
+        },
+        queryParamsHandling: 'merge',
+      }
+    );
   }
 
   hasMobileUserAgent = hasMobileUserAgent();

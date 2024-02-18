@@ -11,7 +11,6 @@ const remasterTags = [
   'remaster',
   'remastered',
   'rerecorded',
-  'alternate',
 ];
 
 const changeTags = [
@@ -24,6 +23,8 @@ const changeTags = [
   'live',
   'interlude',
   'acoustic',
+  'edit',
+  'alternate',
 ];
 
 const specialTags = [

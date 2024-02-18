@@ -1,3 +1,5 @@
+import Rand from "rand-seed";
+
 function stringEditDistance(s1: string, s2: string): number {
   s1 = s1.toLowerCase();
   s2 = s2.toLowerCase();
@@ -48,6 +50,11 @@ export function stringSimilarityCropStart(s1: string, s2: string): number {
   }
   longer = longer.substring(0, shorter.length);
   return stringSimilarity(longer, shorter);
+}
+
+export function generateSeed(length: number | undefined = undefined, rng: Rand | undefined = undefined, pool = '01234567890abcdefghijklmnopqrstuvwxyz'): string {
+  if (length === undefined) length = 16;
+  return [...new Array(length)].map((v) => pool[Math.floor((rng ? rng.next() : Math.random()) * pool.length)]).join('');
 }
 
 export function isEmulationDesktop(): boolean {

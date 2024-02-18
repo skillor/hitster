@@ -217,7 +217,7 @@
 
     <div class="stat">
       <div class="stat-title">Guessed Right</div>
-      <div class="stat-value">{{totalStats.guessedRight + totalStats.guessedWrong > 0 ? totalStats.guessedRight * 100 / (totalStats.guessedRight + totalStats.guessedWrong) : 0}} %</div>
+      <div class="stat-value">{{(totalStats.guessedRight + totalStats.guessedWrong > 0 ? totalStats.guessedRight * 100 / (totalStats.guessedRight + totalStats.guessedWrong) : 0) | number: '1.0-0' }} %</div>
       <div class="stat-desc">of {{totalStats.guessedRight + totalStats.guessedWrong}} Songs</div>
     </div>
 

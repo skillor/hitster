@@ -1,8 +1,7 @@
 import { AfterViewChecked, Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import {CdkDragDrop, CdkDropList, CdkDrag, moveItemInArray, transferArrayItem, CdkDragMove, CdkDragRelease, CdkDragEnd } from '@angular/cdk/drag-drop';
 import { CommonModule, Location } from '@angular/common';
-import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { SpotifyApiService } from '../../shared/spotify-api/spotify-api.service';
+import { ActivatedRoute, ParamMap, Router, RouterModule } from '@angular/router';
 import { Subscription, animationFrameScheduler, catchError, interval } from 'rxjs';
 import { SpotifyPlaylist, SpotifyPlaylistWithLink } from '../../shared/spotify-api/spotify-playlist';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
@@ -13,7 +12,7 @@ import * as confetti from 'canvas-confetti';
 import { Howl } from 'howler';
 import Rand from 'rand-seed';
 import { PlaylistService } from '../../shared/playlist/playlist.service';
-import { hasBeenActive, isMobile } from '../../shared/utils';
+import { generateSeed, hasBeenActive, isMobile } from '../../shared/utils';
 import { StartingModalComponent } from '../../components/starting-modal/starting-modal.component';
 
 interface GameTrack {
@@ -28,10 +27,6 @@ interface GameTrack {
 
 function dateSub(date1: Date, date2: Date): number {
   return date1.getFullYear() - date2.getFullYear()
-}
-
-function generateSeed(length = 16, pool = '01234567890abcdefghijklmnopqrstuvwxyz'): string {
-  return [...new Array(16)].map((v) => pool[Math.floor(Math.random() * pool.length)]).join('');
 }
 
 function shuffleArray(array: any[], rng: Rand) {
@@ -61,14 +56,13 @@ export class PlayComponent implements OnInit, OnDestroy, AfterViewChecked {
     limit: 0,
   };
 
-  hadQuerySeed = false;
+  hadPreSeed = false;
 
   firstDate = new Date('0000');
   lastDate = new Date();
 
   constructor(
     private router: Router,
-    private spotifyApi: SpotifyApiService,
     private playlistService: PlaylistService,
     private sanitizer: DomSanitizer,
     private route: ActivatedRoute,
@@ -143,7 +137,8 @@ export class PlayComponent implements OnInit, OnDestroy, AfterViewChecked {
       return;
     }
     this.menuModal = false;
-    if (!this.hadQuerySeed) this.gameSettings.seed = generateSeed();
+    if (!this.hadPreSeed) this.gameSettings.seed = generateSeed();
+    this.updateUrl();
     this.startGame(this.activePlaylist);
   }
 
@@ -157,7 +152,7 @@ export class PlayComponent implements OnInit, OnDestroy, AfterViewChecked {
   animationSubscription: Subscription | null = null;
 
   ngOnInit(): void {
-    this.route.queryParamMap.subscribe(() => this.initGame());
+    this.route.queryParamMap.subscribe((paramMap) => this.initGame(paramMap));
 
     this.animationSubscription = interval(0, animationFrameScheduler).subscribe(() => {
       const scrollStep = this.currentScrollStep;
@@ -179,7 +174,22 @@ export class PlayComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.animationSubscription?.unsubscribe();
   }
 
-  initGame(): void {
+  updateUrl(): void {
+    const url = this.router.createUrlTree(
+      [],
+      {
+        relativeTo: this.route,
+        queryParams: {
+          p: this.playlistLink.raw,
+          s: JSON.stringify(this.gameSettings),
+        },
+        queryParamsHandling: 'merge',
+      }
+    );
+    this.location.go(url.toString());
+  }
+
+  initGame(queryParams: ParamMap): void {
     this.totalStats = {
       guessedWrong: 0,
       guessedRight: 0,
@@ -207,11 +217,11 @@ export class PlayComponent implements OnInit, OnDestroy, AfterViewChecked {
     const queryGameSettings = this.route.snapshot.queryParamMap.get('s');
     if (queryGameSettings) try {
       const queryGameSettingsParsed = JSON.parse(queryGameSettings);
-      if (queryGameSettingsParsed.seed) this.hadQuerySeed = true;
       this.gameSettings = {...this.gameSettings, ...queryGameSettingsParsed};
     } catch {}
 
-    if (!this.gameSettings.seed) this.gameSettings.seed = generateSeed();
+    if (this.gameSettings.seed) this.hadPreSeed = true;
+    else this.gameSettings.seed = generateSeed();
 
     if (!playlist) {
       this.router.navigate(['home']);
@@ -219,6 +229,8 @@ export class PlayComponent implements OnInit, OnDestroy, AfterViewChecked {
     }
 
     this.playlistLink = playlist;
+
+    this.updateUrl();
 
     if (hasBeenActive() && (!isMobile() || document.fullscreenElement)) {
       this.startingModal = false;
@@ -258,20 +270,6 @@ export class PlayComponent implements OnInit, OnDestroy, AfterViewChecked {
   activePlaylist?: SpotifyPlaylistWithLink;
 
   startGame(playlist: SpotifyPlaylistWithLink) {
-    const url = this.router.createUrlTree(
-      [],
-      {
-        relativeTo: this.route,
-        queryParams: {
-          p: this.playlistLink.raw,
-          s: JSON.stringify(this.gameSettings),
-        },
-        queryParamsHandling: 'merge',
-      }
-    );
-
-    this.location.go(url.toString());
-
     localStorage.setItem('cached_playlist', JSON.stringify(playlist));
 
     this.activePlaylist = playlist;
