@@ -180,6 +180,17 @@ export class PlayComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   initGame(): void {
+    this.totalStats = {
+      guessedWrong: 0,
+      guessedRight: 0,
+      guessedEarly: 0,
+      guessedLate: 0,
+      totalDateOff: 0,
+      totalSlotOff: 0,
+      streak: 0,
+      highestStreak: 0,
+    };
+
     this.loading = true;
     this.startingModal = true;
 
