@@ -66,9 +66,6 @@ body {
   20% {
     background: oklch(var(--su));
   }
-  100% {
-    background: var(--bg-su-to-n);
-  }
 }
 
 @keyframes bg-error-to-neutral {
@@ -77,8 +74,5 @@ body {
   }
   20% {
     background: oklch(var(--er));
-  }
-  100% {
-    background: var(--bg-er-to-n);
   }
 }
