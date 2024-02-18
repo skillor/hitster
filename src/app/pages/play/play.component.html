@@ -97,7 +97,7 @@
   <div class="bg-base-200 min-h-[11rem] fixed-overlay padding-inset-bottom w-full" style="bottom: 0;">
     <div class="w-full flex flex-col min-h-[11rem] justify-end items-center gap-3 p-4">
       <ng-container *ngIf="track_n < gamePlaylist.length; else ending">
-        <div [class.hidden]="newd.length == 0" class="drag-list w-full flex flex-grow items-center justify-center"
+        <div [class.hidden]="yearText != ''" class="drag-list w-full flex flex-grow items-center justify-center"
           id="newd" cdkDropList [cdkDropListData]="newd" cdkDropListConnectedTo="all"
           (cdkDropListDropped)="drop($event)" [cdkDropListEnterPredicate]="noReturnPredicate">
           @for (number of newd; track number) {
