@@ -7,7 +7,7 @@ import { GameSettings, HandleTimesType } from '../../shared/game-settings';
 import { hasMobileUserAgent, isMobile } from '../../shared/utils';
 import { StartingModalComponent } from '../../components/starting-modal/starting-modal.component';
 import { DailyService } from '../../shared/daily/daily.service';
-import { catchError, retry } from 'rxjs';
+import { take } from 'rxjs';
 
 @Component({
   selector: 'app-home',
@@ -75,12 +75,7 @@ export class HomeComponent {
       this.startingModal = false;
     }
 
-    this.daily.getDailySeed().pipe(
-      retry({ count: 3, delay: 2000 }),
-      catchError(() => {
-        return '';
-      }),
-    ).subscribe((v) => {
+    this.daily.getDailySeed().pipe(take(1)).subscribe((v) => {
       if (this.playlists[0]?.settings) this.playlists[0].settings.seed = v;
       this.loading = false;
     });

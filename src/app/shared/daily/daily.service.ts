@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, map, of } from 'rxjs';
+import { Observable, catchError, map, of, retry } from 'rxjs';
 import { generateSeed } from '../utils';
 import Rand from 'rand-seed';
 
@@ -29,7 +29,7 @@ export class DailyService {
   getDailyValue(): string | null {
     const dailyValue = localStorage.getItem('daily_value');
     if (dailyValue && matchingDate(new Date(getDayString()), new Date(dailyValue))) return dailyValue;
-    return null
+    return null;
   }
 
   hasPlayedToday(): boolean {
@@ -48,10 +48,15 @@ export class DailyService {
     return this.http.get<ResponseType>(`https://api.kraken.com/0/public/Ticker?pair=${pair}`).pipe(
       map(v => {
         const price = Number(Object.values(v.result)[0].o);
-        const d = getDayString();
-        const dailyValue = `${d} (${price})`;
+        const dailyValue = `${getDayString()} (${price})`;
+        const seed = generateSeed(undefined, new Rand(dailyValue));
         localStorage.setItem('daily_value', dailyValue);
-        return generateSeed(undefined, new Rand(dailyValue));
+        return seed;
+      }),
+      retry({ count: 3, delay: 2000 }),
+      catchError(() => {
+        console.error('could not get daily lucky number');
+        return `${getDayString()} (error)`;
       }),
     );
   }
