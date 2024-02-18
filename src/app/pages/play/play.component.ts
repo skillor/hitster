@@ -212,10 +212,10 @@ export class PlayComponent implements OnInit, OnDestroy, AfterViewChecked {
     const gameSettings = localStorage.getItem('game_settings');
     if (gameSettings) this.gameSettings = {...this.gameSettings, ...JSON.parse(gameSettings)};
 
-    const queryPlaylistLink = validatePlaylistLink(this.route.snapshot.queryParamMap.get('p'));
+    const queryPlaylistLink = validatePlaylistLink(queryParams.get('p'));
     if (queryPlaylistLink) playlist = queryPlaylistLink;
 
-    const queryGameSettings = this.route.snapshot.queryParamMap.get('s');
+    const queryGameSettings = queryParams.get('s');
     if (queryGameSettings) try {
       const queryGameSettingsParsed = JSON.parse(queryGameSettings);
       this.gameSettings = {...this.gameSettings, ...queryGameSettingsParsed};
