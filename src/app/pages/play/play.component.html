@@ -39,7 +39,7 @@
   </div>
 
   <div class="w-full flex flex-col justify-center items-center flex-grow">
-    <div id="all" cdkDropList [cdkDropListData]="tracks" cdkDropListConnectedTo="newd"
+    <div id="all" cdkDropList [cdkDropListData]="tracks" cdkDropListAutoScrollDisabled cdkDropListConnectedTo="newd"
       class="drag-list flex flex-col w-full flex-grow justify-center items-center gap-3 px-2" style="padding-top: calc(100vh - 11rem - 7rem); padding-bottom: calc(100vh - 5rem - 7rem)" (cdkDropListDropped)="drop($event)" [cdkDropListSortPredicate]="sortPredicate()" (cdkDropListEntered)="move($event)" (cdkDropListSorted)="move($event)">
       @for (number of tracks; track number;) {
 
@@ -98,7 +98,7 @@
     <div class="w-full flex flex-col min-h-[11rem] justify-end items-center gap-3 p-4">
       <ng-container *ngIf="track_n < gamePlaylist.length; else ending">
         <div [class.hidden]="yearText != ''" class="drag-list w-full flex flex-grow items-center justify-center"
-          id="newd" cdkDropList [cdkDropListData]="newd" cdkDropListConnectedTo="all"
+          id="newd" cdkDropList [cdkDropListData]="newd" cdkDropListAutoScrollDisabled cdkDropListConnectedTo="all"
           (cdkDropListDropped)="drop($event)" [cdkDropListEnterPredicate]="noReturnPredicate">
           @for (number of newd; track number) {
 
