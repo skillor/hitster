@@ -16,6 +16,10 @@ body {
 	width: 0;
 }
 
+.modal {
+  backdrop-filter: blur(7px);
+}
+
 .overflow-anywhere {
   overflow-wrap: anywhere;
 }
