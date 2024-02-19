@@ -112,7 +112,7 @@ export class HomeComponent {
 
   inputString: string = '';
   inputChange(): PlaylistLink | null {
-    this.selectedPlaylist = this.defaultSelectedPlaylist;
+    this.selectedPlaylist = 0;
 
     return this.validateInput();
   }
