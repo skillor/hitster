@@ -27,7 +27,7 @@ export class DailyService {
 
   getDailyValue(): string | null {
     const dailyValue = localStorage.getItem('daily_value');
-    if (dailyValue && matchingDate(new Date(getDayString()), new Date(dailyValue))) return dailyValue;
+    if (dailyValue && matchingDate(new Date(getDayString()), new Date(dailyValue.split(" ")[0]))) return dailyValue;
     return null;
   }
 
