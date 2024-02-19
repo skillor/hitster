@@ -301,10 +301,8 @@ export class PlayComponent implements OnInit, OnDestroy, AfterViewChecked {
       // preview_url: this.sanitizer.bypassSecurityTrustResourceUrl(v.track.preview_url),
     }});
 
-    this.gamePlaylist.sort((a, b) => a.date < b.date ? -1 : +1);
-
     if (this.gamePlaylist.length >= 1) {
-      const firstYear = this.gamePlaylist[0].date.getFullYear();
+      const firstYear = Math.min(...this.gamePlaylist.map(v => v.date .getFullYear()));
       const d = new Date(0);
       d.setFullYear(firstYear - 1 - new Rand(String(firstYear) + playlist.link).next() * 50);
       this.firstDate = d;
