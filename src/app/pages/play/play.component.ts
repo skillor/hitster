@@ -191,6 +191,7 @@ export class PlayComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   initGame(queryParams: ParamMap): void {
+    this.timeListened = 0;
     this.totalStats = {
       guessedWrong: 0,
       guessedRight: 0,
@@ -200,6 +201,7 @@ export class PlayComponent implements OnInit, OnDestroy, AfterViewChecked {
       totalSlotOff: 0,
       streak: 0,
       highestStreak: 0,
+      totalTimeListened: 0,
     };
 
     this.loading = true;
@@ -350,8 +352,10 @@ export class PlayComponent implements OnInit, OnDestroy, AfterViewChecked {
     correct: boolean,
     absDateDiff: number,
     absSlotDiff: number,
+    timeListened: number,
   } | null = null;
 
+  timeListened = 0;
   totalStats = {
     guessedWrong: 0,
     guessedRight: 0,
@@ -361,6 +365,7 @@ export class PlayComponent implements OnInit, OnDestroy, AfterViewChecked {
     totalSlotOff: 0,
     streak: 0,
     highestStreak: 0,
+    totalTimeListened: 0,
   };
 
   resetGuess() {
@@ -406,6 +411,7 @@ export class PlayComponent implements OnInit, OnDestroy, AfterViewChecked {
       absSlotDiff: Math.abs(slotDiff),
       absDateDiff: Math.abs(dateDiff),
       gameTrack: this.gamePlaylist[this.track_n],
+      timeListened: this.timeListened,
     };
 
     if (slotDiff == 0) {
@@ -422,6 +428,8 @@ export class PlayComponent implements OnInit, OnDestroy, AfterViewChecked {
     if (slotDiff > 0) this.totalStats.guessedLate += 1;
     this.totalStats.totalDateOff += Math.abs(dateDiff);
     this.totalStats.totalSlotOff += Math.abs(slotDiff);
+    this.totalStats.totalTimeListened += this.timeListened;
+    this.timeListened = 0;
 
     if (this.gameSettings.keepWrongGuesses || slotDiff == 0) {
       this.guessedTracks.splice(i, 0, this.gamePlaylist[this.track_n]);
@@ -499,6 +507,9 @@ export class PlayComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   playPlaybackFromStart() {
+    this.spotifyPlaybackState.position = 0;
+    this.spotifyPlaybackState.isBuffering = true;
+    this.playbackSeekValue = this.spotifyPlaybackState.position;
     this.sendSpotifyEmbedCommand({command: 'play_from_start' });
   }
 
@@ -517,9 +528,11 @@ export class PlayComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.seekDragging = true;
   }
 
-  seekPlayback() {
+  seekPlayback(v: number | undefined = undefined) {
     this.seekDragging = false;
-    this.sendSpotifyEmbedCommand({command: 'seek', timestamp: this.playbackSeekValue / 1000});
+    if (v === undefined) v = this.playbackSeekValue / 1000;
+    if (v < 1) this.playPlaybackFromStart();
+    else this.sendSpotifyEmbedCommand({command: 'seek', timestamp: v});
     this.spotifyPlaybackState.position = this.playbackSeekValue;
     this.spotifyPlaybackState.isBuffering = true;
     // console.log('seek');
@@ -545,10 +558,18 @@ export class PlayComponent implements OnInit, OnDestroy, AfterViewChecked {
         this.sendSpotifyEmbedCommand(this.replaySpotifyEmbedCommand);
         this.replaySpotifyEmbedCommand = null;
       } else if (event.data.type == 'playback_update') {
+        if (!this.seekDragging && this.track_n < this.gamePlaylist.length && this.gamePlaylist[this.track_n].track_url == this.spotifyEmbedUrl) {
+          const d = event.data.payload.position - this.spotifyPlaybackState.position;
+          if (d > 0) this.timeListened += d;
+        }
         this.spotifyPlaybackState = {
-          ...event.data.payload,
+          ...this.spotifyPlaybackState,
+          duration: event.data.payload.duration,
+          isPaused: event.data.payload.isPaused,
           isBuffering: this.spotifyPlaybackState.isBuffering && this.spotifyPlaybackState.position == event.data.payload.position,
         };
+        // TODO: is workaround for skipping position
+        if (Math.abs(this.spotifyPlaybackState.position - event.data.payload.position) < 2000) this.spotifyPlaybackState.position = event.data.payload.position;
         if (!this.seekDragging) this.playbackSeekValue = this.spotifyPlaybackState.position;
         if (this.spotifyPlaybackState.position == this.spotifyPlaybackState.duration) this.spotifyPlaybackState.isPaused = true;
         if (!hasBeenActive()) this.spotifyPlaybackState.isPaused = true;

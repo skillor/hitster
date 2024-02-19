@@ -41,12 +41,14 @@
         <div [attr.id]="'drag-list-id-' + gamePlaylist[track_n].id" class="drag-list-item rounded-lg bg-primary text-primary-content shadow-xl p-4 w-full max-w-lg" cdkDrag [cdkDragData]="number" (cdkDragMoved)="dragMoved($event)" (cdkDragReleased)="dragReleased($event)" (cdkDragEnded)="dragEnded($event)">
           <div class="font-bold text-3xl drag-live-hack">{{dragInnerText}}</div>
           <button class="btn btn-neutral btn-circle mr-3" (click)="toggleOtherSong(gamePlaylist[track_n].track_url)">
-            <svg *ngIf="gamePlaylist[track_n].track_url != spotifyEmbedUrl || spotifyPlaybackState.isPaused" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-6 h-6">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" />
-            </svg>
-            <svg *ngIf="!(gamePlaylist[track_n].track_url != spotifyEmbedUrl || spotifyPlaybackState.isPaused)" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="4" stroke="currentColor" class="w-6 h-6">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25v13.5m-7.5-13.5v13.5" />
-            </svg>
+            <div [ngClass]="{'loading loading-spinner': spotifyPlaybackState.isBuffering && gamePlaylist[track_n].track_url == spotifyEmbedUrl}">
+              <svg *ngIf="gamePlaylist[track_n].track_url != spotifyEmbedUrl || spotifyPlaybackState.isPaused" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-6 h-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" />
+              </svg>
+              <svg *ngIf="!(gamePlaylist[track_n].track_url != spotifyEmbedUrl || spotifyPlaybackState.isPaused)" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="4" stroke="currentColor" class="w-6 h-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25v13.5m-7.5-13.5v13.5" />
+              </svg>
+            </div>
           </button>
         </div>
       </ng-container>
@@ -138,7 +140,7 @@
 
       <div class="flex flex-row gap-2 items-center w-full max-w-lg">
         <div class="flex flex-row items-center">
-          <button class="btn btn-circle" (click)="playPlaybackFromStart()">
+          <button class="btn btn-circle" (click)="seekPlayback(0)">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
               <path stroke-linecap="round" stroke-linejoin="round" d="M21 16.811c0 .864-.933 1.406-1.683.977l-7.108-4.061a1.125 1.125 0 0 1 0-1.954l7.108-4.061A1.125 1.125 0 0 1 21 8.689v8.122ZM11.25 16.811c0 .864-.933 1.406-1.683.977l-7.108-4.061a1.125 1.125 0 0 1 0-1.954l7.108-4.061a1.125 1.125 0 0 1 1.683.977v8.122Z" />
             </svg>
@@ -217,7 +219,12 @@
     <div class="stat">
       <div class="stat-title">Guessed Right</div>
       <div class="stat-value">{{(totalStats.guessedRight + totalStats.guessedWrong > 0 ? totalStats.guessedRight * 100 / (totalStats.guessedRight + totalStats.guessedWrong) : 0) | number: '1.0-0' }} %</div>
-      <div class="stat-desc">of {{totalStats.guessedRight + totalStats.guessedWrong}} Songs</div>
+      <div class="stat-desc">of {{totalStats.guessedRight + totalStats.guessedWrong}} Song{{totalStats.guessedRight + totalStats.guessedWrong != 1 ? 's' : ''}}</div>
+    </div>
+
+    <div class="stat">
+      <div class="stat-title">Time spent</div>
+      <div class="stat-value">{{totalStats.totalTimeListened / 1000 | number: '1.0-0' }}s</div>
     </div>
 
     <a class="btn btn-neutral w-full btn-lg text-xl font-bold" routerLink="/home">
