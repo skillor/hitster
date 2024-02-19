@@ -52,9 +52,17 @@ export function stringSimilarityCropStart(s1: string, s2: string): number {
   return stringSimilarity(longer, shorter);
 }
 
+export function randomNumber(rng: Rand | undefined = undefined): number {
+  return rng ? rng.next() : Math.random();
+}
+
+export function randomInRange(min: number, max: number, rng: Rand | undefined = undefined): number {
+  return randomNumber(rng) * (max - min) + min;
+}
+
 export function generateSeed(length: number | undefined = undefined, rng: Rand | undefined = undefined, pool = '01234567890abcdefghijklmnopqrstuvwxyz'): string {
   if (length === undefined) length = 16;
-  return [...new Array(length)].map((v) => pool[Math.floor((rng ? rng.next() : Math.random()) * pool.length)]).join('');
+  return [...new Array(length)].map((v) => pool[Math.floor(randomNumber(rng) * pool.length)]).join('');
 }
 
 export function isEmulationDesktop(): boolean {

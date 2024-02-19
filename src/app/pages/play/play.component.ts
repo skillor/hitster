@@ -12,7 +12,7 @@ import * as confetti from 'canvas-confetti';
 import { Howl } from 'howler';
 import Rand from 'rand-seed';
 import { PlaylistService } from '../../shared/playlist/playlist.service';
-import { generateSeed, hasBeenActive, isMobile } from '../../shared/utils';
+import { generateSeed, hasBeenActive, isMobile, randomInRange } from '../../shared/utils';
 import { StartingModalComponent } from '../../components/starting-modal/starting-modal.component';
 
 interface GameTrack {
@@ -445,43 +445,86 @@ export class PlayComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.track_n += 1;
     this.newd = [-1];
 
-    if (this.track_n < this.gamePlaylist.length) this.setSpotifyEmbedUrl(this.gamePlaylist[this.track_n].track_url);
+    if (this.track_n < this.gamePlaylist.length) {
+      this.setSpotifyEmbedUrl(this.gamePlaylist[this.track_n].track_url);
 
-    if (slotDiff == 0) {
-      this.nextGuess();
+      if (slotDiff == 0) {
+        this.nextGuess();
 
-      confetti.default({
-        shapes: ['star'],
-        colors: ['FFE400', 'FFBD00', 'E89400', 'FFCA6C', 'FDFFB8'],
-        particleCount: 50,
-        spread: 50,
-        gravity: 0,
-        decay: 0.95,
-        startVelocity: 20,
-        scalar: 0.75,
-        ticks: 50,
-        origin: {
-            y: 0.9,
-            x: 0.5,
-        },
-        zIndex: 5000,
-    });
+        confetti.default({
+          shapes: ['star'],
+          colors: ['FFE400', 'FFBD00', 'E89400', 'FFCA6C', 'FDFFB8'],
+          particleCount: 50,
+          spread: 50,
+          gravity: 0,
+          decay: 0.95,
+          startVelocity: 20,
+          scalar: 0.75,
+          ticks: 50,
+          origin: {
+              y: 0.9,
+              x: 0.5,
+          },
+          zIndex: 5000,
+      });
 
-      this.rightSound.play();
+        this.rightSound.play();
+      } else {
+        // this.nextGuess();
+
+        this.wrongSound.play();
+      }
     } else {
-      // this.nextGuess();
+      const sum = this.totalStats.guessedRight + this. totalStats.guessedWrong;
+      const rightPercentage = (sum > 0 ? this.totalStats.guessedRight / sum : 0);
 
-      this.wrongSound.play();
+      this.sendSpotifyEmbedCommand({command: 'pause'});
+
+      if (rightPercentage >= 0.5) {
+        this.lastGuess.modalOpen = false;
+
+        const conf = (min: number, max: number) => confetti.default({
+          shapes: ['star'],
+          colors: ['FFE400', 'FFBD00', 'E89400', 'FFCA6C', 'FDFFB8'],
+          particleCount: 50,
+          angle: randomInRange(min, max),
+          spread: 50,
+          gravity: 0,
+          decay: 0.95,
+          startVelocity: 20,
+          scalar: 0.75,
+          ticks: 50,
+          origin: {
+              y: 0.9,
+              x: 0.5,
+          },
+          zIndex: 5000,
+        });
+
+        setTimeout(() => conf(45, 75), 0);
+        setTimeout(() => conf(105, 135), 230);
+        setTimeout(() => conf(45, 75), 500);
+        setTimeout(() => conf(75, 105), 500);
+        setTimeout(() => conf(105, 135), 500);
+
+        this.wonSound.once('end', () => this.sendSpotifyEmbedCommand({command: 'resume'}));
+        this.wonSound.play();
+      } else {
+        this.lostSound.play();
+      }
     }
   }
 
-  rightSound: Howl = new Howl({src: 'assets/sound-effects/right.mp3'});
-  wrongSound: Howl = new Howl({src: 'assets/sound-effects/wrong.mp3'});
+  rightSound = new Howl({src: 'assets/sound-effects/right.mp3'});
+  wrongSound = new Howl({src: 'assets/sound-effects/wrong.mp3'});
+  wonSound = new Howl({src: 'assets/sound-effects/won.mp3'});
+  lostSound = new Howl({src: 'assets/sound-effects/lost.mp3'});
 
   nextGuess() {
     if (this.lastGuess) this.lastGuess.modalOpen = false;
 
     if (this.track_n < this.gamePlaylist.length) this.playPlaybackFromStart();
+    else this.sendSpotifyEmbedCommand({command: 'resume'});
   }
 
   spotifyEmbedReady = false;
