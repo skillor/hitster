@@ -27,7 +27,7 @@ export class DailyService {
 
   getDailyValue(): string | null {
     const dailyValue = localStorage.getItem('daily_value');
-    if (dailyValue && matchingDate(new Date(getDayString()), new Date(dailyValue))) return dailyValue;
+    if (dailyValue && matchingDate(new Date(), new Date(dailyValue))) return dailyValue;
     return null;
   }
 
@@ -52,6 +52,7 @@ export class DailyService {
         const price = Number(Object.values(ticker.body.result)[0].o);
         const date = new Date(lastModified);
         if (isNaN(+date)) throw new Error(`invalid date ${date} from "${ticker.url}"`);
+        if (!matchingDate(date, new Date())) throw new Error(`date ${date} not matching`);
         const dailyValue = `${getDayString(date)} (${price})`;
         const seed = generateSeed(undefined, new Rand(dailyValue));
         localStorage.setItem('daily_value', dailyValue);
