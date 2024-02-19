@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, catchError, map, of, retry } from 'rxjs';
 import { generateSeed } from '../utils';
-import Rand, { PRNG } from 'rand-seed';
+import Rand from 'rand-seed';
 
 function getDayString(d = new Date()): string {
   return `${d.getFullYear()}-${d.getUTCMonth()+1}-${d.getUTCDate()}`;
@@ -39,7 +39,7 @@ export class DailyService {
 
   getDailySeed(): Observable<string> {
     const dailyValue = this.getDailyValue();
-    if (dailyValue) return of(generateSeed(undefined, new Rand(dailyValue, PRNG.mulberry32)));
+    if (dailyValue) return of(generateSeed(undefined, new Rand(dailyValue)));
     localStorage.setItem('daily_played', '0');
 
     const pair = 'XBTUSD'; // https://docs.kraken.com/rest/#tag/Market-Data/operation/getTradableAssetPairs
@@ -54,7 +54,7 @@ export class DailyService {
         if (isNaN(+date)) throw new Error(`invalid date ${date} from "${ticker.url}"`);
         if (!matchingDate(date, new Date())) throw new Error(`date ${date} not matching`);
         const dailyValue = `${getDayString(date)} (${price})`;
-        const seed = generateSeed(undefined, new Rand(dailyValue, PRNG.mulberry32));
+        const seed = generateSeed(undefined, new Rand(dailyValue));
         localStorage.setItem('daily_value', dailyValue);
         return seed;
       }),
