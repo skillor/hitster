@@ -11,7 +11,7 @@
         </label>
         <div class="flex flex-row gap-2">
           <input class="w-0 input input-bordered flex-grow placeholder-neutral" [class.input-error]="!validateInput()"
-            placeholder="spotify.com/playlist/13DZqkaAHiTY0nXtQf9iW0" (ngModelChange)="inputChange()"
+            placeholder="spotify.com/playlist/13DZqkaAHiTY0nXtQf9iW0" (input)="inputChange()"
             [(ngModel)]="inputString" [ngModelOptions]="{standalone: true}" />
           <button class="btn btn-neutral" *ngIf="hasClipboard" [class.animate-bg-error-to-neutral]="clipboardError"
             (click)="paste()">

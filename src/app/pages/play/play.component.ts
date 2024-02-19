@@ -474,15 +474,29 @@ export class PlayComponent implements OnInit, OnDestroy, AfterViewChecked {
 
         this.wrongSound.play();
       }
-    } else {
+    } else { // on finish
+      if (slotDiff == 0) this.nextGuess();
+      else this.wrongSound.play();
+    }
+  }
+
+  rightSound = new Howl({src: 'assets/sound-effects/right.mp3'});
+  wrongSound = new Howl({src: 'assets/sound-effects/wrong.mp3'});
+  wonSound = new Howl({src: 'assets/sound-effects/won.mp3'});
+  lostSound = new Howl({src: 'assets/sound-effects/lost.mp3'});
+
+  nextGuess() {
+    if (this.lastGuess) this.lastGuess.modalOpen = false;
+
+    if (this.track_n < this.gamePlaylist.length) this.playPlaybackFromStart();
+    else  {
       const sum = this.totalStats.guessedRight + this. totalStats.guessedWrong;
+
       const rightPercentage = (sum > 0 ? this.totalStats.guessedRight / sum : 0);
 
       this.sendSpotifyEmbedCommand({command: 'pause'});
 
       if (rightPercentage >= 0.5) {
-        this.lastGuess.modalOpen = false;
-
         const conf = (min: number, max: number) => confetti.default({
           shapes: ['star'],
           colors: ['FFE400', 'FFBD00', 'E89400', 'FFCA6C', 'FDFFB8'],
@@ -510,21 +524,10 @@ export class PlayComponent implements OnInit, OnDestroy, AfterViewChecked {
         this.wonSound.once('end', () => this.sendSpotifyEmbedCommand({command: 'resume'}));
         this.wonSound.play();
       } else {
+        this.lostSound.once('end', () => this.sendSpotifyEmbedCommand({command: 'resume'}));
         this.lostSound.play();
       }
     }
-  }
-
-  rightSound = new Howl({src: 'assets/sound-effects/right.mp3'});
-  wrongSound = new Howl({src: 'assets/sound-effects/wrong.mp3'});
-  wonSound = new Howl({src: 'assets/sound-effects/won.mp3'});
-  lostSound = new Howl({src: 'assets/sound-effects/lost.mp3'});
-
-  nextGuess() {
-    if (this.lastGuess) this.lastGuess.modalOpen = false;
-
-    if (this.track_n < this.gamePlaylist.length) this.playPlaybackFromStart();
-    else this.sendSpotifyEmbedCommand({command: 'resume'});
   }
 
   spotifyEmbedReady = false;
