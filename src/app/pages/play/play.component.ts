@@ -191,19 +191,6 @@ export class PlayComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   initGame(queryParams: ParamMap): void {
-    this.timeListened = 0;
-    this.totalStats = {
-      guessedWrong: 0,
-      guessedRight: 0,
-      guessedEarly: 0,
-      guessedLate: 0,
-      totalDateOff: 0,
-      totalSlotOff: 0,
-      streak: 0,
-      highestStreak: 0,
-      totalTimeListened: 0,
-    };
-
     this.loading = true;
     this.startingModal = true;
 
@@ -275,6 +262,19 @@ export class PlayComponent implements OnInit, OnDestroy, AfterViewChecked {
   startGame(playlist: SpotifyPlaylistWithLink) {
     localStorage.setItem('cached_playlist', JSON.stringify(playlist));
 
+    this.timeListened = 0;
+    this.totalStats = {
+      guessedWrong: 0,
+      guessedRight: 0,
+      guessedEarly: 0,
+      guessedLate: 0,
+      totalDateOff: 0,
+      totalSlotOff: 0,
+      streak: 0,
+      highestStreak: 0,
+      totalTimeListened: 0,
+    };
+    
     this.activePlaylist = playlist;
     this.viewChecked = false;
 
