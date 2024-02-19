@@ -274,7 +274,7 @@ export class PlayComponent implements OnInit, OnDestroy, AfterViewChecked {
       highestStreak: 0,
       totalTimeListened: 0,
     };
-    
+
     this.activePlaylist = playlist;
     this.viewChecked = false;
 
@@ -558,10 +558,6 @@ export class PlayComponent implements OnInit, OnDestroy, AfterViewChecked {
         this.sendSpotifyEmbedCommand(this.replaySpotifyEmbedCommand);
         this.replaySpotifyEmbedCommand = null;
       } else if (event.data.type == 'playback_update') {
-        if (!this.seekDragging && this.track_n < this.gamePlaylist.length && this.gamePlaylist[this.track_n].track_url == this.spotifyEmbedUrl) {
-          const d = event.data.payload.position - this.spotifyPlaybackState.position;
-          if (d > 0) this.timeListened += d;
-        }
         this.spotifyPlaybackState = {
           ...this.spotifyPlaybackState,
           duration: event.data.payload.duration,
@@ -569,7 +565,14 @@ export class PlayComponent implements OnInit, OnDestroy, AfterViewChecked {
           isBuffering: this.spotifyPlaybackState.isBuffering && this.spotifyPlaybackState.position == event.data.payload.position,
         };
         // TODO: is workaround for skipping position
-        if (Math.abs(this.spotifyPlaybackState.position - event.data.payload.position) < 2000) this.spotifyPlaybackState.position = event.data.payload.position;
+        if (Math.abs(this.spotifyPlaybackState.position - event.data.payload.position) < 2000) {
+          if (!this.seekDragging && this.track_n < this.gamePlaylist.length && this.gamePlaylist[this.track_n].track_url == this.spotifyEmbedUrl) {
+            const d = event.data.payload.position - this.spotifyPlaybackState.position;
+            if (d > 0) this.timeListened += d;
+          }
+          this.spotifyPlaybackState.position = event.data.payload.position;
+        }
+
         if (!this.seekDragging) this.playbackSeekValue = this.spotifyPlaybackState.position;
         if (this.spotifyPlaybackState.position == this.spotifyPlaybackState.duration) this.spotifyPlaybackState.isPaused = true;
         if (!hasBeenActive()) this.spotifyPlaybackState.isPaused = true;

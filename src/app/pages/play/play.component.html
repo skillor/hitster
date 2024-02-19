@@ -91,7 +91,7 @@
   </div>
 
   <div class="bg-base-200 min-h-[11rem] fixed-overlay padding-inset-bottom w-full" style="bottom: 0;">
-    <div class="w-full flex flex-col min-h-[11rem] justify-end items-center gap-3 p-4">
+    <div class="w-full flex flex-col min-h-[11rem] justify-end items-center gap-3 py-4 px-2">
       <ng-container *ngIf="track_n < gamePlaylist.length; else ending">
         <div [class.hidden]="yearText != ''" class="drag-list w-full flex flex-grow items-center justify-center"
           id="newd" cdkDropList [cdkDropListData]="newd" cdkDropListAutoScrollDisabled cdkDropListConnectedTo="all"
@@ -138,7 +138,7 @@
         </button>
       </ng-template>
 
-      <div class="flex flex-row gap-2 items-center w-full max-w-lg">
+      <div class="flex flex-row px-2 gap-2 items-center w-full max-w-lg">
         <div class="flex flex-row items-center">
           <button class="btn btn-circle" (click)="seekPlayback(0)">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
