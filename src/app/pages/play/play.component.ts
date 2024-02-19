@@ -10,7 +10,7 @@ import { PlaylistLink, validatePlaylistLink } from '../../shared/playlist/playli
 import { GameSettings } from '../../shared/game-settings';
 import * as confetti from 'canvas-confetti';
 import { Howl } from 'howler';
-import Rand from 'rand-seed';
+import Rand, { PRNG } from 'rand-seed';
 import { PlaylistService } from '../../shared/playlist/playlist.service';
 import { generateSeed, hasBeenActive, isMobile, randomInRange } from '../../shared/utils';
 import { StartingModalComponent } from '../../components/starting-modal/starting-modal.component';
@@ -306,11 +306,11 @@ export class PlayComponent implements OnInit, OnDestroy, AfterViewChecked {
     if (this.gamePlaylist.length >= 1) {
       const firstYear = this.gamePlaylist[0].date.getFullYear();
       const d = new Date(0);
-      d.setFullYear(firstYear - 1 - new Rand(String(firstYear) + playlist.link).next() * 50);
+      d.setFullYear(firstYear - 1 - new Rand(String(firstYear) + playlist.link, PRNG.mulberry32).next() * 50);
       this.firstDate = d;
     }
 
-    shuffleArray(this.gamePlaylist, new Rand(this.gameSettings.seed));
+    shuffleArray(this.gamePlaylist, new Rand(this.gameSettings.seed, PRNG.mulberry32));
 
     if (this.gameSettings.limit > 0) this.gamePlaylist = this.gamePlaylist.slice(0, this.gameSettings.limit);
 
