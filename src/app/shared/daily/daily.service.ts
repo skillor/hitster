@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, catchError, map, of, retry } from 'rxjs';
 import { generateSeed } from '../utils';
@@ -44,7 +44,14 @@ export class DailyService {
 
     const pair = 'XBTUSD'; // https://docs.kraken.com/rest/#tag/Market-Data/operation/getTradableAssetPairs
     type TickerResponseType = {result: {[k: string]: {o: string}}}; // https://docs.kraken.com/rest/#tag/Market-Data/operation/getTickerInformation
-    return this.http.get<TickerResponseType>(`https://api.kraken.com/0/public/Ticker?pair=${pair}`, {observe: 'response'}).pipe(
+    return this.http.get<TickerResponseType>(`https://api.kraken.com/0/public/Ticker?pair=${pair}`, {
+      observe: 'response',
+      headers: new HttpHeaders({
+        'Cache-Control': 'no-cache, no-store, must-revalidate, post-check=0, pre-check=0',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      }),
+    }).pipe(
       map((ticker) => {
         if (!ticker.body) throw new Error(`no body from "${ticker.url}"`);
         const lastModified = ticker.headers.get('last-modified');
