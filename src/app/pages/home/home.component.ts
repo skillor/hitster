@@ -26,6 +26,7 @@ export class HomeComponent {
     {title: 'Classic (Deutsch)', link: 'assets/playlists/classic-deutsch.json'},
     {title: 'Perfect Playlist', link: 'assets/playlists/perfect.json'},
     {title: 'Wild Mix', link: 'assets/playlists/wild-mix.json'},
+    {title: 'Klassik', link: 'assets/playlists/klassik.json'},
     {title: 'Massive', link: 'assets/playlists/massive.json'},
   ];
 
