@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, Subject, bufferCount, combineLatest, concatMap, from, map, of, reduce, retry, switchMap } from 'rxjs';
-import { SpotifyPlaylist, SpotifyTracks } from './spotify-playlist';
+import { SpotifyPlaylist, SpotifyTracks } from './spotify-types';
 import { getMarket } from '../utils';
 
 @Injectable({
@@ -31,8 +31,7 @@ export class SpotifyApiService {
     );
   }
 
-  searchAll(searches: string[], chunkSize = 10, limit = 1, type = 'track'): Observable<SpotifyTracks[]> {
-    if (searches.length == 1) return this.searchTrack(searches[0], limit, type).pipe(map(v => [v]));
+  searchAll(searches: string[], chunkSize = 10, limit = 20, type = 'track'): Observable<SpotifyTracks[]> {
     return from(searches).pipe(
       bufferCount(chunkSize),
       concatMap(chunk => combineLatest(chunk.map(v => this.searchTrack(v, limit, type)))),
@@ -40,13 +39,13 @@ export class SpotifyApiService {
     );
   }
 
-  searchTrack(search: string, limit = 1, type = 'track'): Observable<SpotifyTracks> {
+  searchTrack(search: string, limit = 20, type = 'track'): Observable<SpotifyTracks> {
     return this.authorize().pipe(
       switchMap(() => this.http.get<{tracks: SpotifyTracks}>('https://api.spotify.com/v1/search', {
         params: {
           q: search,
           limit: limit,
-          type: 'track',
+          type: type,
           market: getMarket(),
         },
         headers: {

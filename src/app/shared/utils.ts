@@ -5,9 +5,9 @@ function stringEditDistance(s1: string, s2: string): number {
   s2 = s2.toLowerCase();
 
   const costs: number[] = [];
-  for (var i = 0; i <= s1.length; i++) {
+  for (let i = 0; i <= s1.length; i++) {
     let lastValue = i;
-    for (var j = 0; j <= s2.length; j++) {
+    for (let j = 0; j <= s2.length; j++) {
       if (i == 0)
         costs[j] = j;
       else {
@@ -60,6 +60,43 @@ export function randomInRange(min: number, max: number, rng: Rand | undefined = 
   return randomNumber(rng) * (max - min) + min;
 }
 
+export type MedianMode = 'low' | 'high' | 'avg';
+
+export type NumberExtractMode = MedianMode | 'first';
+
+export function numberExtract(values: number[], mode: NumberExtractMode = 'avg'): number {
+  if (mode == 'first') return values[0];
+  return median(values, mode);
+}
+
+export function median(values: number[], mode: MedianMode = 'avg'): number {
+  if (values.length === 0) {
+    throw new Error('Input array is empty');
+  }
+
+  values = [...values].sort((a, b) => a - b);
+
+  const half = Math.floor(values.length / 2);
+
+  if (values.length % 2 || mode == 'high') return values[half];
+
+  if (mode == 'low') return values[half - 1];
+
+  return (values[half - 1] + values[half]) / 2;
+}
+
+export function extractTextContent(s: string | null | undefined, removeQuery = ''): string {
+  if (!s) return '';
+  const span = document.implementation.createHTMLDocument('virtual').createElement('span');
+  span.innerHTML = s;
+  if (removeQuery) span.querySelectorAll(removeQuery).forEach(v => v.remove());
+  return span.textContent || span.innerText;
+}
+
+export function escapeString(s: string): string {
+  return JSON.stringify(s).replace(/((^")|("$))/g, "").trim();
+}
+
 export function generateSeed(length: number | undefined = undefined, rng: Rand | undefined = undefined, pool = '01234567890abcdefghijklmnopqrstuvwxyz'): string {
   if (length === undefined) length = 16;
   return [...new Array(length)].map((v) => pool[Math.floor(randomNumber(rng) * pool.length)]).join('');
@@ -95,4 +132,8 @@ export function hasBeenActive(): boolean {
 
 export function getMarket(): string {
   return Intl.DateTimeFormat().resolvedOptions().locale.split('-').at(-1)!.toUpperCase();
+}
+
+export function getLanguage(): string {
+  return Intl.DateTimeFormat().resolvedOptions().locale.split('-')[0].toLowerCase();
 }

@@ -3,7 +3,7 @@ import {CdkDragDrop, CdkDropList, CdkDrag, moveItemInArray, transferArrayItem, C
 import { CommonModule, Location } from '@angular/common';
 import { ActivatedRoute, ParamMap, Router, RouterModule } from '@angular/router';
 import { Subscription, animationFrameScheduler, catchError, interval } from 'rxjs';
-import { SpotifyPlaylist, SpotifyPlaylistWithLink } from '../../shared/spotify-api/spotify-playlist';
+import { SpotifyPlaylist, SpotifyPlaylistWithLink } from '../../shared/spotify-api/spotify-types';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
 import { PlaylistLink, validatePlaylistLink } from '../../shared/playlist/playlist-link';
@@ -74,6 +74,7 @@ export class PlayComponent implements OnInit, OnDestroy, AfterViewChecked {
   currentScrollStep = 0;
 
   loading = true;
+  loadingSubscription: Subscription | null = null;
 
   startingModal = true;
 
@@ -173,6 +174,7 @@ export class PlayComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   ngOnDestroy(): void {
     this.animationSubscription?.unsubscribe();
+    this.loadingSubscription?.unsubscribe();
   }
 
   updateUrl(): void {
@@ -233,7 +235,7 @@ export class PlayComponent implements OnInit, OnDestroy, AfterViewChecked {
       if (cached && cached.link == playlist.raw) return this.startGame(cached);
     }
 
-    this.playlistService.get(playlist).pipe(catchError((err) => {
+    this.loadingSubscription = this.playlistService.get(playlist).pipe(catchError((err) => {
       this.router.navigate(['home']);
       throw err;
     })).subscribe((res) => {
@@ -246,7 +248,7 @@ export class PlayComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   firstStartGame(playlist: SpotifyPlaylist) {
-    this.playlistService.handleTimes(playlist, this.gameSettings).pipe(catchError((err) => {
+    this.loadingSubscription = this.playlistService.handleTimes(playlist, this.gameSettings.handleTimes).pipe(catchError((err) => {
       this.router.navigate(['home']);
       throw err;
     })).subscribe((res) => {

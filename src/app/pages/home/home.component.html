@@ -80,11 +80,13 @@
           <select class="select select-bordered select-sm text-sm w-full my-2" [(ngModel)]="settings.handleTimes"
             [ngModelOptions]="{standalone: true}">
             <!--
-                'remove-tags' | 'fix-tags' | 'fix-all' | 'keep-all'
+                'remove-tags' | 'fix-tags' | 'fix-all-spotify' | 'fix-all-wiki' | 'fix-all' | 'keep-all'
               -->
             <option value="fix-all">Fix Everything</option>
             <option value="keep-all">Keep Everything</option>
             <option value="fix-tags">Fix tags like Remastered</option>
+            <option value="fix-all-spotify">Use Spotify to fix all</option>
+            <option value="fix-all-wiki">Use Wikipedia to fix all</option>
             <option value="remove-tags">Remove tags like Remastered</option>
           </select>
         </div>
